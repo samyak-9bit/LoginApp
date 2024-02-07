@@ -1,21 +1,28 @@
 /* eslint-disable prettier/prettier */
 import React from 'react';
-import {Pressable, StyleSheet, Text, TextInput, TouchableOpacity, View} from 'react-native';
+import { StyleSheet, Text, TextInput, TouchableOpacity, View} from 'react-native';
 import {
+  defaultErrorMessage,
+  emailLabel,
+  emptyFieldMessage,
+  error401Message,
+  error404Message,
   forgot_Password_Link,
   form_Heading,
+  invalidEmailMessage,
   loginBtn,
+  loginSuccessMessage,
   main_Heading,
   passwordLabel,
   sub_Heading,
-  userNameLabel,
 } from '../constants';
 import { Icon } from 'react-native-paper';
+import Toast from 'react-native-toast-message';
 
 
 function NewLoginPage(): React.JSX.Element {
   const [inputFields, setInputFields] = React.useState({
-    userName: '',
+    email: '',
     password: '',
   });
   const [showPassword, setShowPassword] = React.useState(false);
@@ -24,10 +31,10 @@ function NewLoginPage(): React.JSX.Element {
     setShowPassword(!showPassword);
   };
 
-  const handleUserNameChange = (text: string) => {
+  const handleEmailChange = (text: string) => {
     setInputFields(prevInputFields => ({
       ...prevInputFields,
-      userName: text,
+      email: text,
     }));
   };
 
@@ -38,6 +45,58 @@ function NewLoginPage(): React.JSX.Element {
     }));
   };
 
+  const handleLoginPress = async() => {
+    // Check if email and password are not empty and email is in correct format
+    if (inputFields.email.trim() === '' || inputFields.password.trim() === '') {
+      showToast(emptyFieldMessage);
+      return;
+    } else if (!isValidEmail(inputFields.email)) {
+      showToast(invalidEmailMessage);
+      return;
+    } else {
+      try {
+        const response = await fetch('http://192.168.1.3:9000/authenticate', {
+      method: 'post',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: inputFields.email,
+        password: inputFields.password,
+      }),
+    });
+
+        switch (response.status) {
+          case 200:
+            showToast(loginSuccessMessage);
+            // navigate('/table');
+            return;
+          case 401:
+            showToast(error401Message);
+           return;
+          case 404:
+            showToast(error404Message);
+           return;
+          default:
+            showToast(defaultErrorMessage);
+        }
+      } catch (error) {
+        console.error('Error during login:', error);
+      }
+      showToast(defaultErrorMessage);
+    }
+  };
+
+  const isValidEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const showToast = (message:string) => {
+    Toast.show({
+      type: 'error',
+      text1: message,
+    });
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.upperPart}>
@@ -46,11 +105,11 @@ function NewLoginPage(): React.JSX.Element {
       </View>
       <View style={styles.lowerPart}>
         <Text style={styles.formHeading}>{form_Heading}</Text>
-        <Text style={styles.inputLabel}>{userNameLabel}</Text>
+        <Text style={styles.inputLabel}>{emailLabel}</Text>
         <TextInput
           style={styles.input}
-          value={inputFields.userName}
-          onChangeText={handleUserNameChange}
+          value={inputFields.email}
+          onChangeText={handleEmailChange}
         />
         <Text style={styles.inputLabel}>{passwordLabel}</Text>
         <View style={styles.passwordContainer}>
@@ -66,12 +125,12 @@ function NewLoginPage(): React.JSX.Element {
     source={showPassword ? 'eye-off' : 'eye'}
     color="rgb(65,65,65)"
   />
-</TouchableOpacity>
+</TouchableOpacity >
         </View>
         <Text style={styles.forgotPasswordText}>{forgot_Password_Link}</Text>
-        <Pressable style={styles.btn}>
+        <TouchableOpacity style={styles.btn} onPress={handleLoginPress}>
           <Text style={styles.btnText}>{loginBtn}</Text>
-        </Pressable>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -122,7 +181,7 @@ const styles = StyleSheet.create({
     marginRight: 25,
     textAlign: 'right',
     fontSize: 15,
-    marginBottom: 60,
+    marginBottom: 40,
   },
   btn: {
     height: 40,

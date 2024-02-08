@@ -13,9 +13,9 @@ export const emailPlaceholder = 'Enter your email';
 export const passwordPlaceholder = '**********';
 export const loginSuccessMessage = 'SignIn Successful!';
 export const error401Message =
-  'Authentication Failed! Please enter correct credentials.';
+  'Authentication Failed! Please enter correct details.';
 export const error404Message =
-  'We’re sorry, but the page you’re looking for is currently unavailable. Please try again later.';
+  'Page unavailable. Please try again later.';
 export const defaultErrorMessage =
   'Something went wrong! Please try again later.';
 

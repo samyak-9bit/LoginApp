@@ -13,14 +13,16 @@ import {
   loginBtn,
   loginSuccessMessage,
   main_Heading,
+  newUser,
   passwordLabel,
   sub_Heading,
 } from '../constants';
 import { Icon } from 'react-native-paper';
 import Toast from 'react-native-toast-message';
+import { NavigationProp } from '@react-navigation/native';
 
 
-function NewLoginPage(): React.JSX.Element {
+function NewLoginPage({ navigation }: { navigation: NavigationProp<any> }): React.JSX.Element {
   const [inputFields, setInputFields] = React.useState({
     email: '',
     password: '',
@@ -55,7 +57,7 @@ function NewLoginPage(): React.JSX.Element {
       return;
     } else {
       try {
-        const response = await fetch('http://192.168.1.3:9000/authenticate', {
+        const response = await fetch('http://192.168.1.22:9001/login', {
       method: 'post',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -97,6 +99,9 @@ function NewLoginPage(): React.JSX.Element {
     });
   };
 
+  const handleRgisterPress = ()=>{
+    navigation.navigate('Register');
+  };
   return (
     <View style={styles.container}>
       <View style={styles.upperPart}>
@@ -131,6 +136,10 @@ function NewLoginPage(): React.JSX.Element {
         <TouchableOpacity style={styles.btn} onPress={handleLoginPress}>
           <Text style={styles.btnText}>{loginBtn}</Text>
         </TouchableOpacity>
+
+        <TouchableOpacity style={styles.registerBtn} onPress={handleRgisterPress}>
+          <Text style={styles.newUserbtnText}>{newUser}</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -142,11 +151,11 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgb(34,84,211)',
   },
   upperPart: {
-    height: '40%',
+    height: '35%',
     justifyContent: 'center',
   },
   lowerPart: {
-    height: '60%',
+    height: '65%',
     backgroundColor: 'rgb(255,255,255)',
     borderWidth: 0,
     borderTopLeftRadius: 35,
@@ -229,6 +238,21 @@ const styles = StyleSheet.create({
   },
   icon:{
     marginLeft: 10,
+  },
+  registerBtn:{
+    height: 40,
+    backgroundColor: 'rgb(255,255,255)',
+    justifyContent: 'center',
+    marginHorizontal: 50,
+    borderWidth: 1,
+    borderRadius: 10,
+    marginVertical:10,
+  },
+  newUserbtnText:{
+    textAlign: 'center',
+    color: 'rgb(0,0,0)',
+    fontSize: 16,
+    fontWeight: '400',
   },
 });
 export default NewLoginPage;

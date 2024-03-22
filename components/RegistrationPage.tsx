@@ -2,9 +2,10 @@
 import React from 'react';
 import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { Checkbox } from 'react-native-paper';
-import Toast from 'react-native-toast-message';
 import { defaultErrorMessage, doubleRegisterMessage, emailLabel, emptyFieldMessage, error404Message, existingUserBtn, firstName, invalidEmailMessage, passwordLabel, passwordMismatchMessage, reEnterPasswordLabel, registerBtn, registerSuccessMessage, register_Heading, superUserLabel, weakPasswordMessage } from '../constants';
 import { NavigationProp } from '@react-navigation/native';
+import { isStrongPassword, isValidEmail } from './common Functions/validation';
+import { showToast } from './common Functions/ShowErrorToast';
 
 function RegistrationPage({ navigation }: { navigation: NavigationProp<any> }): React.JSX.Element {
   const [inputFields, setInputFields] = React.useState({
@@ -90,24 +91,6 @@ function RegistrationPage({ navigation }: { navigation: NavigationProp<any> }): 
           showToast(defaultErrorMessage);
         }
 };
-
-
-  const isValidEmail = (email: string): boolean => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
-
-  const isStrongPassword = (password: string): boolean => {
-    const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-    return strongPasswordRegex.test(password);
-  };
-
-  const showToast = (message:string) => {
-    Toast.show({
-      type: 'error',
-      text1: message,
-    });
-  };
 
   const handleLoginPress = ()=>{
     navigation.navigate('Login');

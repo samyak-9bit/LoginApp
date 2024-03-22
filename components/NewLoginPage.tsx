@@ -18,8 +18,9 @@ import {
   sub_Heading,
 } from '../constants';
 import { Icon } from 'react-native-paper';
-import Toast from 'react-native-toast-message';
 import { NavigationProp } from '@react-navigation/native';
+import { isValidEmail } from './common Functions/validation';
+import { showToast } from './common Functions/ShowErrorToast';
 
 
 function NewLoginPage({ navigation }: { navigation: NavigationProp<any> }): React.JSX.Element {
@@ -85,18 +86,6 @@ function NewLoginPage({ navigation }: { navigation: NavigationProp<any> }): Reac
       }
       showToast(defaultErrorMessage);
     }
-  };
-
-  const isValidEmail = (email: string): boolean => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
-
-  const showToast = (message:string) => {
-    Toast.show({
-      type: 'error',
-      text1: message,
-    });
   };
 
   const handleRgisterPress = ()=>{

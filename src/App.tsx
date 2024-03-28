@@ -20,7 +20,7 @@ const Stack = createNativeStackNavigator();
 function App(): React.JSX.Element {
   return (
     <PaperProvider>
-      <ToastProvider>
+      <ToastProvider placement='top'>
       <NavigationContainer>
         <Stack.Navigator screenOptions={{headerShown: false}}>
           <Stack.Screen name="Login" component={NewLoginPage} />

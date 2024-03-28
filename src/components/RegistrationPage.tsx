@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { Checkbox } from 'react-native-paper';
 import { defaultErrorMessage, doubleRegisterMessage, emailLabel, emptyFieldMessage, error404Message, existingUserBtn, firstName, invalidEmailMessage, passwordLabel, passwordMismatchMessage, reEnterPasswordLabel, registerBtn, registerSuccessMessage, register_Heading, superUserLabel, weakPasswordMessage } from '../constants';
 import { NavigationProp } from '@react-navigation/native';
@@ -16,6 +16,7 @@ function RegistrationPage({ navigation }: { navigation: NavigationProp<any> }): 
   });
 
   const [reEnterPassword, setReEnterPassword] = React.useState('');
+  const [loading, setLoading]  = React.useState(false);
 
   const handleChange = (name: string, value: string) => {
     setInputFields({
@@ -57,6 +58,7 @@ function RegistrationPage({ navigation }: { navigation: NavigationProp<any> }): 
         showToast(passwordMismatchMessage);
         return;
     } else {
+        setLoading(true);
         try {
             const response = await fetch('http://192.168.1.22:9001/askdb/entity/users', {
           method: 'post',
@@ -87,13 +89,22 @@ function RegistrationPage({ navigation }: { navigation: NavigationProp<any> }): 
             }
           } catch (error) {
             console.error('Error during registering:', error);
+            showToast(defaultErrorMessage);
           }
-          showToast(defaultErrorMessage);
+          finally{
+            setLoading(false);
+          }
         }
 };
 
   const handleLoginPress = ()=>{
     navigation.navigate('Login');
+    setInputFields({
+      name: '',
+      email: '',
+      password: '',
+      isSuperUser: false,
+    });
   };
   return (
     <View style={styles.container}>
@@ -102,7 +113,8 @@ function RegistrationPage({ navigation }: { navigation: NavigationProp<any> }): 
         <Text style={styles.subHeading}>{sub_Heading}</Text> */}
       </View>
       <View style={styles.lowerPart}>
-      <Text style={styles.formHeading}>{register_Heading}</Text>
+      <Text style={[styles.formHeading,loading?styles.formHeadingWhenSpinner:null]}>{register_Heading}</Text>
+      {loading && <ActivityIndicator size="large" color='rgb(34,84,211)'/>}
       <Text style={styles.inputLabel}>{firstName}</Text>
         <TextInput
           style={styles.input}
@@ -152,12 +164,12 @@ function RegistrationPage({ navigation }: { navigation: NavigationProp<any> }): 
            <Text style={styles.checkBoxLabel}>{superUserLabel}</Text>
         </View>
 
-        <TouchableOpacity style={styles.btn} onPress={handleRegisterPress}>
-        <Text style={styles.btnText}>{registerBtn}</Text>
+        <TouchableOpacity style={[styles.btn, loading?styles.disabledBtn:null]} onPress={handleRegisterPress} disabled={loading}>
+        <Text style={[styles.btnText,loading?styles.disabledBtnText:null]}>{registerBtn}</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.registerBtn} onPress={handleLoginPress}>
-          <Text style={styles.newUserbtnText}>{existingUserBtn}</Text>
+        <TouchableOpacity style={[styles.registerBtn,loading?styles.disabledRegisterBtn:null]} onPress={handleLoginPress} disabled={loading}>
+          <Text style={[styles.newUserbtnText,loading?styles.disabledRegisterBtnText:null]}>{existingUserBtn}</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -212,6 +224,7 @@ const styles = StyleSheet.create({
     borderWidth: 0,
     borderTopLeftRadius: 35,
     borderTopRightRadius: 35,
+    paddingHorizontal: Platform.OS === 'web' ? 200:0,
   },
 //   mainHeading: {
 //     textAlign: 'center',
@@ -230,6 +243,9 @@ const styles = StyleSheet.create({
     fontSize: 40,
     marginTop: 16,
     marginBottom: 22,
+  },
+  formHeadingWhenSpinner:{
+    marginBottom: 0,
   },
   inputLabel: {
     marginLeft: 25,
@@ -318,6 +334,19 @@ registerBtn:{
     color: 'rgb(0,0,0)',
     fontSize: 16,
     fontWeight: '400',
+  },
+  disabledBtn: {
+    backgroundColor: 'rgba(34,84,211,0.5)', 
+  },
+  disabledBtnText: {
+    color: 'rgba(255,255,255,0.7)', 
+  },
+  disabledRegisterBtn: {
+    backgroundColor: 'rgba(255,255,255,0.5)', 
+    borderColor: 'rgba(0,0,0,0.2)',
+  },
+  disabledRegisterBtnText: {
+    color: 'rgba(0,0,0,0.5)',
   },
 });
 

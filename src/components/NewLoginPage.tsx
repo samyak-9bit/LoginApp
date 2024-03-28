@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { StyleSheet, Text, TextInput, TouchableOpacity, View} from 'react-native';
+import { ActivityIndicator, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View} from 'react-native';
 import {
   defaultErrorMessage,
   emailLabel,
@@ -29,6 +29,7 @@ function NewLoginPage({ navigation }: { navigation: NavigationProp<any> }): Reac
     password: '',
   });
   const [showPassword, setShowPassword] = React.useState(false);
+  const [loading, setLoading]  = React.useState(false);
 
   const toggleShowPassword = () => {
     setShowPassword(!showPassword);
@@ -57,6 +58,7 @@ function NewLoginPage({ navigation }: { navigation: NavigationProp<any> }): Reac
       showToast(invalidEmailMessage);
       return;
     } else {
+      setLoading(true);
       try {
         const response = await fetch('http://192.168.1.22:9001/login', {
       method: 'post',
@@ -75,6 +77,9 @@ function NewLoginPage({ navigation }: { navigation: NavigationProp<any> }): Reac
           case 401:
             showToast(error401Message);
            return;
+          case 403:
+            showToast(error401Message);
+           return;
           case 404:
             showToast(error404Message);
            return;
@@ -83,13 +88,21 @@ function NewLoginPage({ navigation }: { navigation: NavigationProp<any> }): Reac
         }
       } catch (error) {
         console.error('Error during login:', error);
+        showToast(defaultErrorMessage);
       }
-      showToast(defaultErrorMessage);
+      finally{
+        setLoading(false);
+      }
+     
     }
   };
 
   const handleRgisterPress = ()=>{
     navigation.navigate('Register');
+    setInputFields({
+      email: '',
+      password: '',
+    });
   };
   return (
     <View style={styles.container}>
@@ -98,7 +111,8 @@ function NewLoginPage({ navigation }: { navigation: NavigationProp<any> }): Reac
         <Text style={styles.subHeading}>{sub_Heading}</Text>
       </View>
       <View style={styles.lowerPart}>
-        <Text style={styles.formHeading}>{form_Heading}</Text>
+        <Text style={[styles.formHeading, loading?styles.formHeadingWhenSpinner:null]}>{form_Heading}</Text>
+        {loading && <ActivityIndicator size="large" color='rgb(34,84,211)'/>}
         <Text style={styles.inputLabel}>{emailLabel}</Text>
         <TextInput
           style={styles.input}
@@ -122,12 +136,12 @@ function NewLoginPage({ navigation }: { navigation: NavigationProp<any> }): Reac
 </TouchableOpacity >
         </View>
         <Text style={styles.forgotPasswordText}>{forgot_Password_Link}</Text>
-        <TouchableOpacity style={styles.btn} onPress={handleLoginPress}>
-          <Text style={styles.btnText}>{loginBtn}</Text>
+        <TouchableOpacity style={[styles.btn, loading?styles.disabledBtn:null]} onPress={handleLoginPress} disabled={loading}>
+          <Text style={[styles.btnText,loading?styles.disabledBtnText:null]}>{loginBtn}</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.registerBtn} onPress={handleRgisterPress}>
-          <Text style={styles.newUserbtnText}>{newUser}</Text>
+        <TouchableOpacity style={[styles.registerBtn,loading?styles.disabledRegisterBtn:null]} onPress={handleRgisterPress} disabled={loading}>
+          <Text style={[styles.newUserbtnText,loading?styles.disabledRegisterBtnText:null]}>{newUser}</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -149,6 +163,7 @@ const styles = StyleSheet.create({
     borderWidth: 0,
     borderTopLeftRadius: 35,
     borderTopRightRadius: 35,
+    paddingHorizontal: Platform.OS === 'web' ? 200:0,
   },
   mainHeading: {
     textAlign: 'center',
@@ -167,6 +182,9 @@ const styles = StyleSheet.create({
     fontSize: 40,
     marginTop: 18,
     marginBottom: 35,
+  },
+  formHeadingWhenSpinner:{
+    marginBottom: 0,
   },
   inputLabel: {
     marginLeft: 25,
@@ -243,5 +261,19 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '400',
   },
+  disabledBtn: {
+    backgroundColor: 'rgba(34,84,211,0.5)', 
+  },
+  disabledBtnText: {
+    color: 'rgba(255,255,255,0.7)', 
+  },
+  disabledRegisterBtn: {
+    backgroundColor: 'rgba(255,255,255,0.5)', 
+    borderColor: 'rgba(0,0,0,0.2)',
+  },
+  disabledRegisterBtnText: {
+    color: 'rgba(0,0,0,0.5)',
+  },
+  
 });
 export default NewLoginPage;

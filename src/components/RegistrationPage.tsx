@@ -60,40 +60,44 @@ function RegistrationPage({ navigation }: { navigation: NavigationProp<any> }): 
     } else {
         setLoading(true);
         try {
-            const response = await fetch('http://192.168.1.22:9001/askdb/entity/users', {
-          method: 'post',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            name: inputFields.name,
-            email: inputFields.email,
-            password: inputFields.password,
-            isSuperUser: inputFields.isSuperUser,
-          }),
-        });
-
-            switch (response.status) {
-              case 200:
-                showToast(registerSuccessMessage);
-                return;
-              case 201:
-                showToast(registerSuccessMessage);
-                return;
-              case 409:
+          const response = await fetch('http://192.168.1.22:9001/askdb/entity/users', {
+            method: 'post',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              name: inputFields.name,
+              email: inputFields.email,
+              password: inputFields.password,
+              isSuperUser: inputFields.isSuperUser,
+            }),
+          });
+        
+          const responseData = await response.json(); 
+        
+          switch (response.status) {
+            case 200:
+            case 201:
+              showToast(registerSuccessMessage);
+              break;
+            case 403:
+              if (responseData.errorCode === 11000) {
                 showToast(doubleRegisterMessage);
-               return;
-              case 404:
-                showToast(error404Message);
-               return;
-              default:
-                showToast(defaultErrorMessage);
-            }
-          } catch (error) {
-            console.error('Error during registering:', error);
-            showToast(defaultErrorMessage);
+              }
+              break;
+            case 409:
+              showToast(doubleRegisterMessage);
+              break;
+            case 404:
+              showToast(error404Message);
+              break;
+            default:
+              showToast(defaultErrorMessage);
           }
-          finally{
-            setLoading(false);
-          }
+        } catch (error) {
+          console.error('Error during registering:', error);
+          showToast(defaultErrorMessage);
+        } finally {
+          setLoading(false);
+        }
         }
 };
 

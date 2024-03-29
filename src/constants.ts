@@ -43,3 +43,22 @@ export const regularUserLabel = 'Regular User';
 export const superUserLabel = 'Super User';
 export const newUser = 'New User? Register Here...';
 export const existingUserBtn = 'Existing User? LogIn...';
+
+
+export const usersPageTitle = 'Users';
+export const addUserHeading = 'Add a New User';
+export const addUserBtn = 'Click to add';
+
+
+
+
+
+
+
+
+
+
+
+
+
+

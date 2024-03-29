@@ -14,6 +14,8 @@ import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import LoggedInPage from './components/LoggedInPage';
 import RegistrationPage from './components/RegistrationPage';
 import { ToastProvider } from 'react-native-toast-notifications';
+import UsersPage from './components/UsersPage';
+import UserUpsert from './components/UserUpsert';
 
 const Stack = createNativeStackNavigator();
 
@@ -23,6 +25,8 @@ function App(): React.JSX.Element {
       <ToastProvider placement='top'>
       <NavigationContainer>
         <Stack.Navigator screenOptions={{headerShown: false}}>
+          <Stack.Screen name="Users" component={UsersPage}/>
+          <Stack.Screen name="UserUpsert" component={UserUpsert} />
           <Stack.Screen name="Login" component={NewLoginPage} />
           <Stack.Screen name="Register" component={RegistrationPage} />
           <Stack.Screen name="Welcome" component={LoggedInPage} />

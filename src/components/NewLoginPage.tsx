@@ -50,7 +50,6 @@ function NewLoginPage({ navigation }: { navigation: NavigationProp<any> }): Reac
   };
 
   const handleLoginPress = async() => {
-    // Check if email and password are not empty and email is in correct format
     if (inputFields.email.trim() === '' || inputFields.password.trim() === '') {
       showToast(emptyFieldMessage);
       return;

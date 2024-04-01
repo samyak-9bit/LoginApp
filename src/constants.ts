@@ -48,8 +48,13 @@ export const existingUserBtn = 'Existing User? LogIn...';
 export const usersPageTitle = 'Users';
 export const addUserHeading = 'Add a New User';
 export const addUserBtn = 'Click to add';
-
-
+export const getDataError = 'Error: Unable to get data.';
+export const editUserHeading = 'Edit the User';
+export const editUserBtn = 'Click to Update';
+export const deleteSuccessMessage = 'User Deleted Successfully!';
+export const deleteFailureMessage = 'Cannot Delete the user. Try again Later!'
+export const editSuccessMessage = 'User updated Successfully!';
+export const editFailureMessage = 'Cannot Update the user. Try again Later!'
 
 
 

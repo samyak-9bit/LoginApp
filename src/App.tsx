@@ -17,20 +17,34 @@ import { ToastProvider } from 'react-native-toast-notifications';
 import UsersPage from './components/UsersPage';
 import UserUpsert from './components/UserUpsert';
 
-const Stack = createNativeStackNavigator();
+export type RootStackParamList = {
+  Users: undefined;
+  UserUpsert: { user:
+                    { userId: string,
+                      name: string,
+                      email: string,
+                      password: string,                     
+                    } };
+  Register: undefined;
+  Welcome: undefined;
+  Login: undefined;
+};
+
+const RootStack = createNativeStackNavigator<RootStackParamList>();
 
 function App(): React.JSX.Element {
+
   return (
     <PaperProvider>
       <ToastProvider placement='top'>
       <NavigationContainer>
-        <Stack.Navigator screenOptions={{headerShown: false}}>
-          <Stack.Screen name="Users" component={UsersPage}/>
-          <Stack.Screen name="UserUpsert" component={UserUpsert} />
-          <Stack.Screen name="Login" component={NewLoginPage} />
-          <Stack.Screen name="Register" component={RegistrationPage} />
-          <Stack.Screen name="Welcome" component={LoggedInPage} />
-        </Stack.Navigator>
+        <RootStack.Navigator screenOptions={{headerShown: false}} initialRouteName='Login'>
+          <RootStack.Screen name="Users" component={UsersPage}/>
+          <RootStack.Screen name="UserUpsert" component={UserUpsert}/>
+          <RootStack.Screen name="Login" component={NewLoginPage} />
+          <RootStack.Screen name="Register" component={RegistrationPage} />
+          <RootStack.Screen name="Welcome" component={LoggedInPage} />
+        </RootStack.Navigator>
         {/* <NewLoginPage /> */}
         {/* <LoggedInPage /> */}
       </NavigationContainer>

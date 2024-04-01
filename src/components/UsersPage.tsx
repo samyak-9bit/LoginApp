@@ -1,8 +1,9 @@
-import React from 'react';
-import { NavigationProp } from '@react-navigation/native';
-import { FlatList, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { NavigationProp, useFocusEffect } from '@react-navigation/native';
+import { ActivityIndicator, FlatList, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Appbar, Avatar, Icon } from 'react-native-paper';
-import { usersPageTitle } from '../constants';
+import { deleteFailureMessage, deleteSuccessMessage, getDataError, usersPageTitle } from '../constants';
+import { showToast } from './common Functions/ShowErrorToast';
 
 interface User {
   _id: string;
@@ -15,29 +16,75 @@ interface User {
 
 
 function UsersPage({ navigation }: { navigation: NavigationProp<any> }): React.JSX.Element {
-  const users: User[] = [
-    {
-      "_id": "660659a01ca73aa14bac5c6a",
-      "email": "james@ninebit.in",
-      "name": "James",
-      "password": "123",
-      "pin": "452010"
-    },
-    {
-      "_id": "66065c657b9e7ac0c3064a0e",
-      "name": "john",
-      "email": "john@gmail.com",
-      "password": "John@12345",
-      "isSuperUser": false
-    },
-    {
-      "_id": "66066aa0f600d78f5fdd01b3",
-      "name": "john",
-      "email": "john1@gmail.com",
-      "password": "John@12345",
-      "isSuperUser": true
-    },
-  ];
+
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchData = async () => {
+    try{
+      const resp = await fetch("http://192.168.1.22:9001/askdb/entity/users");
+      const data = await resp.json();
+      setUsers(data);
+    }
+    catch(error){
+      showToast(getDataError);
+      console.error('Error during fetching:', error);
+    }
+    finally{
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchData();
+    }, [])
+  );
+  const deleteUser = async(id:String)=>{
+    try{
+      const resp = await fetch('http://192.168.1.22:9001/askdb/entity/users/'+id , {
+      method: 'DELETE',
+      });
+      if(resp.status===200){
+        showToast(deleteSuccessMessage);
+        fetchData();
+      }else{
+        showToast(deleteFailureMessage);
+      }
+    }catch(error){
+      showToast('Error in deleting: '+error);
+      console.error('Error during fetching:', error);
+    }
+  }
+
+
+  // const users: User[] = [
+  //   {
+  //     "_id": "660659a01ca73aa14bac5c6a",
+  //     "email": "james@ninebit.in",
+  //     "name": "James",
+  //     "password": "123",
+  //     "pin": "452010"
+  //   },
+  //   {
+  //     "_id": "66065c657b9e7ac0c3064a0e",
+  //     "name": "john",
+  //     "email": "john@gmail.com",
+  //     "password": "John@12345",
+  //     "isSuperUser": false
+  //   },
+  //   {
+  //     "_id": "66066aa0f600d78f5fdd01b3",
+  //     "name": "john",
+  //     "email": "john1@gmail.com",
+  //     "password": "John@12345",
+  //     "isSuperUser": true
+  //   },
+  // ];
 
   const renderItem = ({ item }: { item: User }) => (
     <TouchableOpacity style={styles.itemContainer}>
@@ -49,10 +96,25 @@ function UsersPage({ navigation }: { navigation: NavigationProp<any> }): React.J
         <Text style={styles.subtitle}>{item.email}</Text>
       </View>
       <View style={styles.iconContainer}>
-        <TouchableOpacity onPress={() => {navigation.navigate('UserUpsert',{_id:item._id})}}>
+        <TouchableOpacity onPress={() => {navigation.navigate('UserUpsert',{ user:
+                      { userId: item._id,
+                        name: item.name,
+                        email: item.email,
+                        password: item.password,                     
+                      } }
+                      
+                    )}}>
           <Icon
           size={25}
           source='pencil'
+          />
+        </TouchableOpacity>
+      </View>
+      <View style={styles.iconContainer}>
+        <TouchableOpacity onPress={() => {deleteUser(item._id)}}>
+          <Icon
+          size={24}
+          source='delete'
           />
         </TouchableOpacity>
       </View>
@@ -65,9 +127,14 @@ function UsersPage({ navigation }: { navigation: NavigationProp<any> }): React.J
       <Appbar.Header style={styles.topbar}>
         <Appbar.BackAction color='rgb(255,255,255)' onPress={() => {navigation.goBack()}} />
         <Appbar.Content title={usersPageTitle} titleStyle={styles.titleStyle} />
-        <Appbar.Action icon="plus" color='rgb(255,255,255)' size={32} onPress={() => {navigation.navigate('UserUpsert',{_id:null})}} />
+        <Appbar.Action icon="plus" color='rgb(255,255,255)' size={32} onPress={() => {navigation.navigate('UserUpsert',{ user:
+                      { userId: '',
+                        name: '',      
+                        email: '',
+                        password: '',                     
+                      } } )}} />
       </Appbar.Header>
-
+      {loading && <ActivityIndicator size="large" color='rgb(34,84,211)' style={{marginTop:15}}/>}
     <ScrollView>
       <FlatList
         data={users}
@@ -113,6 +180,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: 'gray',
   },
-});
+}); 
 
 export default UsersPage;

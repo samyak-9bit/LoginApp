@@ -70,8 +70,9 @@ function NewLoginPage({ navigation }: { navigation: NavigationProp<any> }): Reac
 
         switch (response.status) {
           case 200:
-            showToast(loginSuccessMessage);
+            // showToast(loginSuccessMessage);
             // navigate('/table');
+            navigation.navigate('Users')
             return;
           case 401:
             showToast(error401Message);

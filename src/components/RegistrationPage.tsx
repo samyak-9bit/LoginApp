@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { ActivityIndicator, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { Checkbox } from 'react-native-paper';
+import { Checkbox, Icon } from 'react-native-paper';
 import { defaultErrorMessage, doubleRegisterMessage, emailLabel, emptyFieldMessage, error404Message, existingUserBtn, firstName, invalidEmailMessage, passwordLabel, passwordMismatchMessage, reEnterPasswordLabel, registerBtn, registerSuccessMessage, register_Heading, superUserLabel, weakPasswordMessage } from '../constants';
 import { NavigationProp } from '@react-navigation/native';
 import { isStrongPassword, isValidEmail } from './common Functions/validation';
@@ -17,6 +17,11 @@ function RegistrationPage({ navigation }: { navigation: NavigationProp<any> }): 
 
   const [reEnterPassword, setReEnterPassword] = React.useState('');
   const [loading, setLoading]  = React.useState(false);
+  const [showPassword, setShowPassword] = React.useState(false);
+
+  const toggleShowPassword = () => {
+    setShowPassword(!showPassword);
+  };
 
   const handleChange = (name: string, value: string) => {
     setInputFields({
@@ -143,13 +148,29 @@ function RegistrationPage({ navigation }: { navigation: NavigationProp<any> }): 
           onChangeText={(text) => handleChange('email', text)}
         />
         <Text style={styles.inputLabel}>{passwordLabel}</Text>
-        <TextInput
+        {/* <TextInput
           style={styles.input}
         //   placeholder="Password"
           secureTextEntry
           value={inputFields.password}
           onChangeText={(text) => handleChange('password', text)}
-        />
+        /> */}
+
+<View style={styles.passwordContainer}>
+          <TextInput
+            style={styles.passwordInput}
+            value={inputFields.password}
+            onChangeText={(text) => handleChange('password', text)}
+            secureTextEntry={!showPassword}
+          />
+        <TouchableOpacity onPress={toggleShowPassword} style={styles.icon}>
+  <Icon
+    size={23}
+    source={showPassword ? 'eye-off' : 'eye'}
+    color="rgb(65,65,65)"
+  />
+</TouchableOpacity >
+        </View>
         <Text style={styles.inputLabel}>{reEnterPasswordLabel}</Text>
         <TextInput
           style={styles.input}
@@ -288,6 +309,28 @@ const styles = StyleSheet.create({
     color: 'rgb(255,255,255)',
     fontSize: 20,
     fontWeight: '400',
+  },
+  passwordContainer: {
+    height: 45,
+    backgroundColor: 'rgb(244,244,244)',
+    paddingHorizontal: 15,
+    borderWidth: 0,
+    borderRadius: 8,
+    marginHorizontal: 25,
+    marginBottom: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  passwordInput:{
+    flex: 1,
+    color: '#333',
+    paddingVertical: 10,
+    paddingRight: 10,
+    fontSize: 16,
+  },
+  icon:{
+    marginLeft: 10,
   },
 //   passwordContainer: {
 //     height: 45,

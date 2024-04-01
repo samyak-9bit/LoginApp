@@ -1,21 +1,16 @@
 import React from 'react';
 import { ActivityIndicator, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { Checkbox } from 'react-native-paper';
-import { addUserBtn, addUserHeading, defaultErrorMessage, doubleRegisterMessage, emailLabel, emptyFieldMessage, error404Message, firstName, invalidEmailMessage, main_Heading, passwordLabel, passwordMismatchMessage, reEnterPasswordLabel, registerSuccessMessage, sub_Heading, superUserLabel, weakPasswordMessage } from '../constants';
-import { NavigationProp, RouteProp } from '@react-navigation/native';
+import { Checkbox, Icon } from 'react-native-paper';
+import { addUserBtn, addUserHeading, defaultErrorMessage, doubleRegisterMessage, editFailureMessage, editSuccessMessage, editUserBtn, editUserHeading, emailLabel, emptyFieldMessage, error404Message, firstName, invalidEmailMessage, main_Heading, passwordLabel, passwordMismatchMessage, reEnterPasswordLabel, registerSuccessMessage, sub_Heading, superUserLabel, weakPasswordMessage } from '../constants';
 import { isStrongPassword, isValidEmail } from './common Functions/validation';
 import { showToast } from './common Functions/ShowErrorToast';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../App';
+import { useNavigation } from '@react-navigation/native';
 
-interface RouteParams {
-    _id: string; // Assuming _id is a string
-  }
-  
-interface Props {
-    navigation: NavigationProp<any>;
-    route: RouteProp<any, RouteParams>; // Specify the type of route.params
-}
+type UserProps = NativeStackScreenProps<RootStackParamList, "UserUpsert">
 
-function UserUpsert(props: Props): React.JSX.Element{
+function UserUpsert({route}: UserProps): React.JSX.Element{
       const [inputFields, setInputFields] = React.useState({
         name: '',
         email: '',
@@ -25,14 +20,35 @@ function UserUpsert(props: Props): React.JSX.Element{
       
       const [reEnterPassword, setReEnterPassword] = React.useState('');
       const [loading, setLoading]  = React.useState(false);
-      const { route } = props;
-      const { _id } = route.params;
+      const [editMode,setEditMode] = React.useState(false);
+      const [showPassword, setShowPassword] = React.useState(false);
+      const navigation = useNavigation();
+      const {user} = route.params;
+
+      React.useEffect(() => {
+        if (user.userId.trim() !== '') {
+            setEditMode(true);
+            setInputFields({
+              name: user.name,
+              email: user.email,
+              password: user.password,
+              isSuperUser: false,
+            })
+            setReEnterPassword(user.password)
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    },[user.userId]);
+      
     
       const handleChange = (name: string, value: string) => {
         setInputFields({
           ...inputFields,
           [name]: value,
         });
+      };
+
+      const toggleShowPassword = () => {
+        setShowPassword(!showPassword);
       };
     
       const handleReEnterPasswordChange = (text: string) => {
@@ -103,24 +119,74 @@ function UserUpsert(props: Props): React.JSX.Element{
                   showToast(defaultErrorMessage);
               }
             } catch (error) {
-              console.error('Error during registering:', error);
+              console.error('Error during fetching data:', error);
               showToast(defaultErrorMessage);
             } finally {
               setLoading(false);
             }
             }
     };
+
+    const handleEditPress=async()=>{
+      if (
+        inputFields.name.trim() === '' ||
+        inputFields.email.trim() === '' ||
+        inputFields.password.trim() === '' ||
+        reEnterPassword.trim() === ''
+    ) {
+        showToast(emptyFieldMessage);
+        return;
+    } else if (!isValidEmail(inputFields.email)) {
+        showToast(invalidEmailMessage);
+        return;
+    } else if (!isStrongPassword(inputFields.password)) {
+        showToast(weakPasswordMessage);
+        return;
+    } else if (inputFields.password !== reEnterPassword) {
+        showToast(passwordMismatchMessage);
+        return;
+    } else {
+        setLoading(true);
+        try {
+          const response = await fetch('http://192.168.1.22:9001/askdb/entity/users/'+user.userId, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              name: inputFields.name,
+              email: inputFields.email,
+              password: inputFields.password,
+              isSuperUser: inputFields.isSuperUser,
+            }),
+          });
+          if(response.status===200){
+            showToast(editSuccessMessage);
+          }else{
+            showToast(editFailureMessage);
+          }
+        } catch (error) {
+          console.error('Error during fetching data:', error);
+          showToast(defaultErrorMessage);
+        } finally {
+          setLoading(false);
+        }
+        }
+    }
     
     return(
         <View style={styles.container}>
-        <View style={styles.upperPart}>
+        <TouchableOpacity onPress={()=>{navigation.goBack()}} style={styles.backIcon}>
+          <Icon
+          color='rgb(255,255,255)'
+          size={24}
+          source='arrow-left'
+          />
+          </TouchableOpacity>
         <View style={styles.upperPart}>
         <Text style={styles.mainHeading}>{main_Heading}</Text>
         <Text style={styles.subHeading}>{sub_Heading}</Text>
-      </View>
         </View>
         <View style={styles.lowerPart}>
-        <Text style={[styles.formHeading,loading?styles.formHeadingWhenSpinner:null]}>{addUserHeading}</Text>
+        <Text style={[styles.formHeading,loading?styles.formHeadingWhenSpinner:null]}>{editMode?editUserHeading:addUserHeading}</Text>
         {loading && <ActivityIndicator size="large" color='rgb(34,84,211)'/>}
         <Text style={styles.inputLabel}>{firstName}</Text>
           <TextInput
@@ -163,8 +229,8 @@ function UserUpsert(props: Props): React.JSX.Element{
              <Text style={styles.checkBoxLabel}>{superUserLabel}</Text>
           </View>
   
-          <TouchableOpacity style={[styles.btn, loading?styles.disabledBtn:null]} onPress={handleRegisterPress} disabled={loading}>
-          <Text style={[styles.btnText,loading?styles.disabledBtnText:null]}>{addUserBtn}</Text>
+          <TouchableOpacity style={[styles.btn, loading?styles.disabledBtn:null]} onPress={editMode? handleEditPress : handleRegisterPress} disabled={loading}>
+          <Text style={[styles.btnText,loading?styles.disabledBtnText:null]}>{editMode?editUserBtn:addUserBtn}</Text>
           </TouchableOpacity>
 
         </View>
@@ -183,7 +249,7 @@ const styles = StyleSheet.create({
      
       },
       upperPart: {
-        height: '20%',
+        height: '18%',
         justifyContent: 'center',
       },
       subHeading: {
@@ -282,6 +348,14 @@ const styles = StyleSheet.create({
       disabledRegisterBtnText: {
         color: 'rgba(0,0,0,0.5)',
       },
+      backIcon:{
+        padding:3,
+      }
     });
     
 export default UserUpsert;
+
+
+
+
+

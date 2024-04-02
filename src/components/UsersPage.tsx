@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { NavigationProp, useFocusEffect } from '@react-navigation/native';
+import { NavigationProp} from '@react-navigation/native';
 import { ActivityIndicator, FlatList, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Appbar, Avatar, Icon } from 'react-native-paper';
 import { deleteFailureMessage, deleteSuccessMessage, getDataError, usersPageTitle } from '../constants';
 import { showToast } from './common Functions/ShowErrorToast';
+import { AppContext } from '../App';
 
 interface User {
   _id: string;
@@ -17,33 +18,49 @@ interface User {
 
 function UsersPage({ navigation }: { navigation: NavigationProp<any> }): React.JSX.Element {
 
-  const [users, setUsers] = useState([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
+  const { setIsSignedIn } = React.useContext(AppContext);
 
-  const fetchData = async () => {
-    try{
-      const resp = await fetch("http://192.168.1.22:9001/askdb/entity/users");
-      const data = await resp.json();
-      setUsers(data);
-    }
-    catch(error){
-      showToast(getDataError);
-      console.error('Error during fetching:', error);
-    }
-    finally{
-      setLoading(false);
-    }
-  };
+  // const fetchData = async () => {
+  //   try{
+  //     const resp = await fetch("http://192.168.1.22:9001/askdb/entity/users");
+  //     const data = await resp.json();
+  //     setUsers(data);
+  //   }
+  //   catch(error){
+  //     showToast(getDataError,'warning');
+  //     console.error('Error during fetching:', error);
+  //   }
+  //   finally{
+  //     setLoading(false);
+  //   }
+  // };
 
   useEffect(() => {
-    fetchData();
-  }, []);
-
-  useFocusEffect(
-    React.useCallback(() => {
+    const fetchData = async () => {
+      try {
+        const resp = await fetch("http://192.168.1.22:9001/askdb/entity/users");
+        const data = await resp.json();
+        setUsers(data);
+        setLoading(false);
+      } catch (error) {
+        showToast(getDataError, 'warning');
+        console.error('Error during fetching:', error);
+        setLoading(false);
+      }
+    };
+  
+    fetchData(); 
+  
+    const unsubscribe = navigation.addListener('focus', () => {
       fetchData();
-    }, [])
-  );
+    });
+  
+    return unsubscribe;
+  }, [navigation]); 
+  
+  
   const deleteUser = async(id:String)=>{
     try{
       const resp = await fetch('http://192.168.1.22:9001/askdb/entity/users/'+id , {
@@ -51,12 +68,12 @@ function UsersPage({ navigation }: { navigation: NavigationProp<any> }): React.J
       });
       if(resp.status===200){
         showToast(deleteSuccessMessage);
-        fetchData();
+        setUsers(prevUsers => prevUsers.filter(user => user._id !== id));
       }else{
-        showToast(deleteFailureMessage);
+        showToast(deleteFailureMessage,'warning');
       }
     }catch(error){
-      showToast('Error in deleting: '+error);
+      showToast('Error in deleting: '+error,'warning');
       console.error('Error during fetching:', error);
     }
   }
@@ -125,7 +142,7 @@ function UsersPage({ navigation }: { navigation: NavigationProp<any> }): React.J
   return (
     <View>
       <Appbar.Header style={styles.topbar}>
-        <Appbar.BackAction color='rgb(255,255,255)' onPress={() => {navigation.goBack()}} />
+        {/* <Appbar.BackAction color='rgb(255,255,255)' onPress={() => {navigation.goBack()}} /> */}
         <Appbar.Content title={usersPageTitle} titleStyle={styles.titleStyle} />
         <Appbar.Action icon="plus" color='rgb(255,255,255)' size={32} onPress={() => {navigation.navigate('UserUpsert',{ user:
                       { userId: '',
@@ -133,6 +150,7 @@ function UsersPage({ navigation }: { navigation: NavigationProp<any> }): React.J
                         email: '',
                         password: '',                     
                       } } )}} />
+        <Appbar.Action icon='logout-variant' color='rgb(255,255,255)' size={28} onPress={()=>{setIsSignedIn(false)}}/>
       </Appbar.Header>
       {loading && <ActivityIndicator size="large" color='rgb(34,84,211)' style={{marginTop:15}}/>}
     <ScrollView>
@@ -147,7 +165,7 @@ function UsersPage({ navigation }: { navigation: NavigationProp<any> }): React.J
   );
 }
 
-const styles = StyleSheet.create({
+const styles = StyleSheet.create({        
   topbar: {
     backgroundColor: 'rgb(34,84,211)',
   },
@@ -183,3 +201,4 @@ const styles = StyleSheet.create({
 }); 
 
 export default UsersPage;
+

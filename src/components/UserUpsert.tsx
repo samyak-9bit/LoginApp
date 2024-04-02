@@ -72,16 +72,16 @@ function UserUpsert({route}: UserProps): React.JSX.Element{
             inputFields.password.trim() === '' ||
             reEnterPassword.trim() === ''
         ) {
-            showToast(emptyFieldMessage);
+            showToast(emptyFieldMessage,'warning');
             return;
         } else if (!isValidEmail(inputFields.email)) {
-            showToast(invalidEmailMessage);
+            showToast(invalidEmailMessage,'warning');
             return;
         } else if (!isStrongPassword(inputFields.password)) {
-            showToast(weakPasswordMessage);
+            showToast(weakPasswordMessage,'warning');
             return;
         } else if (inputFields.password !== reEnterPassword) {
-            showToast(passwordMismatchMessage);
+            showToast(passwordMismatchMessage,'warning');
             return;
         } else {
             setLoading(true);
@@ -103,24 +103,31 @@ function UserUpsert({route}: UserProps): React.JSX.Element{
                 case 200:
                 case 201:
                   showToast(registerSuccessMessage);
+                  setInputFields({
+                    name: '',
+                    email: '',
+                    password: '',
+                    isSuperUser: false,
+                  });
+                  setReEnterPassword('');
                   break;
                 case 403:
                   if (responseData.errorCode === 11000) {
-                    showToast(doubleRegisterMessage);
+                    showToast(doubleRegisterMessage,'warning');
                   }
                   break;
                 case 409:
-                  showToast(doubleRegisterMessage);
+                  showToast(doubleRegisterMessage,'warning');
                   break;
                 case 404:
-                  showToast(error404Message);
+                  showToast(error404Message,'warning');
                   break;
                 default:
-                  showToast(defaultErrorMessage);
+                  showToast(defaultErrorMessage,'warning');
               }
             } catch (error) {
               console.error('Error during fetching data:', error);
-              showToast(defaultErrorMessage);
+              showToast(defaultErrorMessage,'warning');
             } finally {
               setLoading(false);
             }
@@ -134,16 +141,16 @@ function UserUpsert({route}: UserProps): React.JSX.Element{
         inputFields.password.trim() === '' ||
         reEnterPassword.trim() === ''
     ) {
-        showToast(emptyFieldMessage);
+        showToast(emptyFieldMessage,'warning');
         return;
     } else if (!isValidEmail(inputFields.email)) {
-        showToast(invalidEmailMessage);
+        showToast(invalidEmailMessage,'warning');
         return;
     } else if (!isStrongPassword(inputFields.password)) {
-        showToast(weakPasswordMessage);
+        showToast(weakPasswordMessage,'warning');
         return;
     } else if (inputFields.password !== reEnterPassword) {
-        showToast(passwordMismatchMessage);
+        showToast(passwordMismatchMessage,'warning');
         return;
     } else {
         setLoading(true);
@@ -161,11 +168,11 @@ function UserUpsert({route}: UserProps): React.JSX.Element{
           if(response.status===200){
             showToast(editSuccessMessage);
           }else{
-            showToast(editFailureMessage);
+            showToast(editFailureMessage,'warning');
           }
         } catch (error) {
           console.error('Error during fetching data:', error);
-          showToast(defaultErrorMessage);
+          showToast(defaultErrorMessage,'warning');
         } finally {
           setLoading(false);
         }
@@ -204,13 +211,28 @@ function UserUpsert({route}: UserProps): React.JSX.Element{
             onChangeText={(text) => handleChange('email', text)}
           />
           <Text style={styles.inputLabel}>{passwordLabel}</Text>
-          <TextInput
+          {/* <TextInput
             style={styles.input}
           //   placeholder="Password"
             secureTextEntry
             value={inputFields.password}
             onChangeText={(text) => handleChange('password', text)}
+          /> */}
+          <View style={styles.passwordContainer}>
+          <TextInput
+            style={styles.passwordInput}
+            value={inputFields.password}
+            onChangeText={(text) => handleChange('password', text)}
+            secureTextEntry={!showPassword}
           />
+        <TouchableOpacity onPress={toggleShowPassword} style={styles.icon}>
+  <Icon
+    size={23}
+    source={showPassword ? 'eye-off' : 'eye'}
+    color="rgb(65,65,65)"
+  />
+</TouchableOpacity >
+        </View>
           <Text style={styles.inputLabel}>{reEnterPasswordLabel}</Text>
           <TextInput
             style={styles.input}
@@ -238,6 +260,9 @@ function UserUpsert({route}: UserProps): React.JSX.Element{
     )
 }
 const styles = StyleSheet.create({
+  topbar: {
+    backgroundColor: 'rgb(34,84,211)',
+  },
       container: {
         height: '100%',
         backgroundColor: 'rgb(34,84,211)',
@@ -274,6 +299,28 @@ const styles = StyleSheet.create({
       },
       formHeadingWhenSpinner:{
         marginBottom: 0,
+      },
+      passwordContainer: {
+        height: 45,
+        backgroundColor: 'rgb(244,244,244)',
+        paddingHorizontal: 15,
+        borderWidth: 0,
+        borderRadius: 8,
+        marginHorizontal: 25,
+        marginBottom: 14,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+      },
+      passwordInput:{
+        flex: 1,
+        color: '#333',
+        paddingVertical: 10,
+        paddingRight: 10,
+        fontSize: 16,
+      },
+      icon:{
+        marginLeft: 10,
       },
       inputLabel: {
         marginLeft: 25,

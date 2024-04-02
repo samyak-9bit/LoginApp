@@ -32,24 +32,53 @@ export type RootStackParamList = {
 
 const RootStack = createNativeStackNavigator<RootStackParamList>();
 
+
+export const AppContext = React.createContext({
+  isSignedIn: false,
+  setIsSignedIn: (value: boolean) => {}, 
+});
+
+
 function App(): React.JSX.Element {
 
+  const [isSignedIn, setIsSignedIn] = React.useState(false)
+
+  const appContextValue = React.useMemo(
+    () => ({
+      isSignedIn,
+      setIsSignedIn,
+    }),
+    [isSignedIn]
+  )
+
   return (
+    <AppContext.Provider value={appContextValue}>
     <PaperProvider>
       <ToastProvider placement='top'>
       <NavigationContainer>
-        <RootStack.Navigator screenOptions={{headerShown: false}} initialRouteName='Login'>
-          <RootStack.Screen name="Users" component={UsersPage}/>
-          <RootStack.Screen name="UserUpsert" component={UserUpsert}/>
+        <RootStack.Navigator screenOptions={{headerShown: false}}>
+          {isSignedIn?(
+            <>
+           <RootStack.Screen name="Users" component={UsersPage}/>
+           <RootStack.Screen name="UserUpsert" component={UserUpsert}/>
+           <RootStack.Screen name="Welcome" component={LoggedInPage} />
+           </>
+          ):(
+            <>
           <RootStack.Screen name="Login" component={NewLoginPage} />
           <RootStack.Screen name="Register" component={RegistrationPage} />
-          <RootStack.Screen name="Welcome" component={LoggedInPage} />
+          </>
+          )}
+        
+        
+          
         </RootStack.Navigator>
         {/* <NewLoginPage /> */}
         {/* <LoggedInPage /> */}
       </NavigationContainer>
       </ToastProvider>
     </PaperProvider>
+    </AppContext.Provider>
   );
 }
 

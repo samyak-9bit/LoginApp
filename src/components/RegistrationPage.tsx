@@ -51,16 +51,16 @@ function RegistrationPage({ navigation }: { navigation: NavigationProp<any> }): 
         inputFields.password.trim() === '' ||
         reEnterPassword.trim() === ''
     ) {
-        showToast(emptyFieldMessage);
+        showToast(emptyFieldMessage,'warning');
         return;
     } else if (!isValidEmail(inputFields.email)) {
-        showToast(invalidEmailMessage);
+        showToast(invalidEmailMessage,'warning');
         return;
     } else if (!isStrongPassword(inputFields.password)) {
-        showToast(weakPasswordMessage);
+        showToast(weakPasswordMessage,'warning');
         return;
     } else if (inputFields.password !== reEnterPassword) {
-        showToast(passwordMismatchMessage);
+        showToast(passwordMismatchMessage,'warning');
         return;
     } else {
         setLoading(true);
@@ -82,24 +82,31 @@ function RegistrationPage({ navigation }: { navigation: NavigationProp<any> }): 
             case 200:
             case 201:
               showToast(registerSuccessMessage);
+              setInputFields({
+                name: '',
+                email: '',
+                password: '',
+                isSuperUser: false,
+              });
+              setReEnterPassword('');
               break;
             case 403:
               if (responseData.errorCode === 11000) {
-                showToast(doubleRegisterMessage);
+                showToast(doubleRegisterMessage,'warning');
               }
               break;
             case 409:
-              showToast(doubleRegisterMessage);
+              showToast(doubleRegisterMessage,'warning');
               break;
             case 404:
-              showToast(error404Message);
+              showToast(error404Message,'warning');
               break;
             default:
-              showToast(defaultErrorMessage);
+              showToast(defaultErrorMessage,'warning');
           }
         } catch (error) {
           console.error('Error during registering:', error);
-          showToast(defaultErrorMessage);
+          showToast(defaultErrorMessage,'warning');
         } finally {
           setLoading(false);
         }

@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useContext } from 'react';
 import { ActivityIndicator, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View} from 'react-native';
 import {
   defaultErrorMessage,
@@ -18,9 +18,10 @@ import {
   sub_Heading,
 } from '../constants';
 import { Icon } from 'react-native-paper';
-import { NavigationProp } from '@react-navigation/native';
+import { NavigationProp, useFocusEffect } from '@react-navigation/native';
 import { isValidEmail } from './common Functions/validation';
 import { showToast } from './common Functions/ShowErrorToast';
+import { AppContext } from '../App';
 
 
 function NewLoginPage({ navigation }: { navigation: NavigationProp<any> }): React.JSX.Element {
@@ -30,6 +31,7 @@ function NewLoginPage({ navigation }: { navigation: NavigationProp<any> }): Reac
   });
   const [showPassword, setShowPassword] = React.useState(false);
   const [loading, setLoading]  = React.useState(false);
+  const { setIsSignedIn } = useContext(AppContext);
 
   const toggleShowPassword = () => {
     setShowPassword(!showPassword);
@@ -51,10 +53,10 @@ function NewLoginPage({ navigation }: { navigation: NavigationProp<any> }): Reac
 
   const handleLoginPress = async() => {
     if (inputFields.email.trim() === '' || inputFields.password.trim() === '') {
-      showToast(emptyFieldMessage);
+      showToast(emptyFieldMessage,'warning');
       return;
     } else if (!isValidEmail(inputFields.email)) {
-      showToast(invalidEmailMessage);
+      showToast(invalidEmailMessage,'warning');
       return;
     } else {
       setLoading(true);
@@ -72,23 +74,24 @@ function NewLoginPage({ navigation }: { navigation: NavigationProp<any> }): Reac
           case 200:
             // showToast(loginSuccessMessage);
             // navigate('/table');
-            navigation.navigate('Users')
+            setIsSignedIn(true);
+            // navigation.navigate('Users');
             return;
           case 401:
-            showToast(error401Message);
+            showToast(error401Message,'warning');
            return;
           case 403:
-            showToast(error401Message);
+            showToast(error401Message,'warning');
            return;
           case 404:
-            showToast(error404Message);
+            showToast(error404Message,'warning');
            return;
           default:
-            showToast(defaultErrorMessage);
+            showToast(defaultErrorMessage,'warning');
         }
       } catch (error) {
         console.error('Error during login:', error);
-        showToast(defaultErrorMessage);
+        showToast(defaultErrorMessage,'warning');
       }
       finally{
         setLoading(false);
@@ -104,8 +107,19 @@ function NewLoginPage({ navigation }: { navigation: NavigationProp<any> }): Reac
       password: '',
     });
   };
+
+  useFocusEffect(
+    React.useCallback(() => {
+      setInputFields({
+        email:'',
+        password:'',
+      })
+    }, [])
+  );
   return (
+  
     <View style={styles.container}>
+       
       <View style={styles.upperPart}>
         <Text style={styles.mainHeading}>{main_Heading}</Text>
         <Text style={styles.subHeading}>{sub_Heading}</Text>
@@ -144,7 +158,9 @@ function NewLoginPage({ navigation }: { navigation: NavigationProp<any> }): Reac
           <Text style={[styles.newUserbtnText,loading?styles.disabledRegisterBtnText:null]}>{newUser}</Text>
         </TouchableOpacity>
       </View>
+   
     </View>
+  
   );
 }
 

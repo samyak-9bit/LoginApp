@@ -86,7 +86,7 @@ function UserUpsert({route}: UserProps): React.JSX.Element{
         } else {
             setLoading(true);
             try {
-              const response = await fetch('http://192.168.1.22:9001/askdb/entity/users', {
+              const response = await fetch(Platform.OS==='android'?'http://10.0.2.2:5000/register':'http://localhost:5000/register', {
                 method: 'post',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

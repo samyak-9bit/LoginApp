@@ -5,7 +5,7 @@
  * @format
  */
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import {PaperProvider} from 'react-native-paper';
 import NewLoginPage from './components/NewLoginPage';
 import {NavigationContainer} from '@react-navigation/native';
@@ -16,6 +16,7 @@ import RegistrationPage from './components/RegistrationPage';
 import { ToastProvider } from 'react-native-toast-notifications';
 import UsersPage from './components/UsersPage';
 import UserUpsert from './components/UserUpsert';
+import socketService from './utils/socketService';
 
 export type RootStackParamList = {
   Users: undefined;
@@ -50,6 +51,26 @@ function App(): React.JSX.Element {
     }),
     [isSignedIn]
   )
+
+  // useEffect(() => {
+  //   const socket = io('http://localhost:5000'); // Replace with your server address
+    
+  //   socket.on('connect', () => {
+  //     console.log('Connected to server');
+  //   });
+
+  //   socket.on('message', (data) => {
+  //     console.log('Received message:', data);
+  //   });
+
+  //   return () => {
+  //     socket.disconnect();
+  //   };
+  // }, []);
+
+  useEffect(()=>{
+    socketService.initializeSocket();
+  },[])
 
   return (
     <AppContext.Provider value={appContextValue}>

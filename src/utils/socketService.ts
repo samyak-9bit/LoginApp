@@ -1,7 +1,8 @@
 // @ts-nocheck
+import { Platform } from "react-native";
 import { io } from "socket.io-client";
 
-const SOCKET_URL = 'http://localhost:5000';
+const SOCKET_URL = Platform.OS==='android'?'http://10.0.2.2:5000':'http://localhost:5000';
 
 class WSSErvice{
 
@@ -24,6 +25,10 @@ class WSSErvice{
             this.socket.on("error",(data)=>{
                 console.log("=== Socket Error ===",data);
             })
+
+            // this.socket.on("newUser",(data)=>{
+            //     console.log(data);
+            // })
         }catch(error){
             console.log("Socket not initialized", error)
         }

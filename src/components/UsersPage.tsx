@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { NavigationProp} from '@react-navigation/native';
-import { ActivityIndicator, FlatList, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, FlatList, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Appbar, Avatar, Icon } from 'react-native-paper';
 import { deleteFailureMessage, deleteSuccessMessage, getDataError, usersPageTitle } from '../constants';
 import { showToast } from './common Functions/ShowErrorToast';
 import { AppContext } from '../App';
+import socketService from '../utils/socketService';
 
 interface User {
   _id: string;
@@ -40,7 +41,7 @@ function UsersPage({ navigation }: { navigation: NavigationProp<any> }): React.J
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const resp = await fetch("http://192.168.1.22:9001/askdb/entity/users");
+        const resp = await fetch(Platform.OS==='android'?'http://10.0.2.2:5000/users':'http://localhost:5000/users');
         const data = await resp.json();
         setUsers(data);
         setLoading(false);
@@ -52,6 +53,12 @@ function UsersPage({ navigation }: { navigation: NavigationProp<any> }): React.J
     };
   
     fetchData(); 
+
+    //@ts-ignore
+    socketService.socket.on("newUser", (data) => {
+      console.log('Push recieved in: ',Platform.OS, ' : ', data);
+      fetchData();
+    });
   
     const unsubscribe = navigation.addListener('focus', () => {
       fetchData();

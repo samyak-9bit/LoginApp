@@ -11,6 +11,7 @@
     "web": "react-app-rewired start"
   },
   "dependencies": {
+    "@react-native-community/netinfo": "^11.3.1",
     "@react-navigation/native": "^6.1.9",
     "@react-navigation/native-stack": "^6.9.17",
     "@testing-library/jest-dom": "^5.17.0",
@@ -28,6 +29,7 @@
     "react-art": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-native": "0.73.3",
+    "react-native-background-actions": "^3.0.1",
     "react-native-paper": "^5.12.3",
     "react-native-safe-area-context": "^4.9.0",
     "react-native-screens": "^3.29.0",

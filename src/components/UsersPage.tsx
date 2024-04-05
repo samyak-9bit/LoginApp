@@ -6,6 +6,8 @@ import { deleteFailureMessage, deleteSuccessMessage, getDataError, usersPageTitl
 import { showToast } from './common Functions/ShowErrorToast';
 import { AppContext } from '../App';
 import socketService from '../utils/socketService';
+import NetInfo from '@react-native-community/netinfo';
+import BackgroundService from 'react-native-background-actions';
 
 interface User {
   _id: string;
@@ -70,7 +72,7 @@ function UsersPage({ navigation }: { navigation: NavigationProp<any> }): React.J
   
   const deleteUser = async(id:String)=>{
     try{
-      const resp = await fetch('http://192.168.1.22:9001/askdb/entity/users/'+id , {
+      const resp = await fetch(Platform.OS==='android'?'http://10.0.2.2:5000/users/'+id :'http://localhost:5000/users/'+id , {
       method: 'DELETE',
       });
       if(resp.status===200){
@@ -84,6 +86,43 @@ function UsersPage({ navigation }: { navigation: NavigationProp<any> }): React.J
       console.error('Error during fetching:', error);
     }
   }
+
+  const options = {
+    taskName: 'Delete User',
+    taskTitle: 'Deleting User',
+    taskDesc: 'Deleting the user from user list. Waiting for network to complete the task',
+    taskIcon: {
+        name: 'ic_launcher',
+        type: 'mipmap',
+    },
+    color: '#ff00ff',
+    // linkingURI: 'yourSchemeHere://chat/jane', 
+    parameters: {
+        delay: 1000,
+    },
+};
+
+const deleteUserWaitForNetwork=async(id:string)=>{
+  const state = await NetInfo.fetch();
+  if (state.isConnected){
+      deleteUser(id);
+      BackgroundService.stop();
+  }
+}
+
+const deleteUserWithNetwork = async (id: string) => {
+  try {
+      const state = await NetInfo.fetch();
+      if (state.isConnected) {
+          deleteUser(id);
+      } else {
+          await BackgroundService.start(() => deleteUserWaitForNetwork(id), options);
+      }
+  } catch (error) {
+      console.error('Error checking network status: ', error);
+  }
+}
+
 
 
   // const users: User[] = [
@@ -135,7 +174,7 @@ function UsersPage({ navigation }: { navigation: NavigationProp<any> }): React.J
         </TouchableOpacity>
       </View>
       <View style={styles.iconContainer}>
-        <TouchableOpacity onPress={() => {deleteUser(item._id)}}>
+        <TouchableOpacity onPress={() => {deleteUserWithNetwork(item._id)}}>
           <Icon
           size={24}
           source='delete'

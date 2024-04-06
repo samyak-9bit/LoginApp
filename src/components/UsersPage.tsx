@@ -18,6 +18,38 @@ interface User {
   isSuperUser?: boolean;
 }
 
+const sleep = (time: number | undefined) => new Promise<void>((resolve) => setTimeout(() => resolve(), time));
+
+const veryIntensiveTask = async (taskData?: { delay: number; }) => {
+  if (!taskData) {
+    throw new Error("Task data is undefined");
+  }
+
+  const { delay } = taskData;
+  await new Promise<void>(async (resolve) => {
+    for (let i = 0; BackgroundService.isRunning(); i++) {
+      console.log(i);
+      await BackgroundService.updateNotification({taskDesc: 'New ExampleTask description'+i});
+      await sleep(delay);
+    }
+  });
+};
+
+
+const options = {
+  taskName: 'Example',
+  taskTitle: 'ExampleTask title',
+  taskDesc: 'ExampleTask description',
+  taskIcon: {
+      name: 'ic_launcher',
+      type: 'mipmap-hdpi',
+  },
+  color: '#ff00ff',
+  linkingURI: 'yourSchemeHere://chat/jane',
+  parameters: {
+      delay: 1000,
+  },
+};
 
 function UsersPage({ navigation }: { navigation: NavigationProp<any> }): React.JSX.Element {
 
@@ -87,41 +119,22 @@ function UsersPage({ navigation }: { navigation: NavigationProp<any> }): React.J
     }
   }
 
-  const options = {
-    taskName: 'Delete User',
-    taskTitle: 'Deleting User',
-    taskDesc: 'Deleting the user from user list. Waiting for network to complete the task',
-    taskIcon: {
-        name: 'ic_launcher',
-        type: 'mipmap',
-    },
-    color: '#ff00ff',
-    // linkingURI: 'yourSchemeHere://chat/jane', 
-    parameters: {
-        delay: 1000,
-    },
-};
-
-const deleteUserWaitForNetwork=async(id:string)=>{
-  const state = await NetInfo.fetch();
-  if (state.isConnected){
-      deleteUser(id);
-      BackgroundService.stop();
-  }
-}
-
 const deleteUserWithNetwork = async (id: string) => {
-  try {
-      const state = await NetInfo.fetch();
-      if (state.isConnected) {
-          deleteUser(id);
-      } else {
-          await BackgroundService.start(() => deleteUserWaitForNetwork(id), options);
-      }
-  } catch (error) {
-      console.error('Error checking network status: ', error);
-  }
-}
+  await BackgroundService.start(veryIntensiveTask, options);
+  await BackgroundService.updateNotification({taskDesc: 'New ExampleTask description'});
+ } // Only Android, iOS will ignore this call
+//   try {
+//       const state = await NetInfo.fetch();
+//       if (state.isConnected) {
+//           deleteUser(id);
+//       } else {
+//         await BackgroundService.start(veryIntensiveTask, options);
+//         await BackgroundService.updateNotification({taskDesc: 'New ExampleTask description'}); // Only Android, iOS will ignore this call
+//       }
+//   } catch (error) {
+//       console.error('Error checking network status: ', error);
+//   }
+// }
 
 
 

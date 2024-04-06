@@ -23,6 +23,7 @@ import { isValidEmail } from './common Functions/validation';
 import { showToast } from './common Functions/ShowErrorToast';
 import { AppContext } from '../App';
 
+const sleep = (time: number | undefined) => new Promise<void>((resolve) => setTimeout(() => resolve(), time));
 
 function NewLoginPage({ navigation }: { navigation: NavigationProp<any> }): React.JSX.Element {
   const [inputFields, setInputFields] = React.useState({
@@ -61,7 +62,7 @@ function NewLoginPage({ navigation }: { navigation: NavigationProp<any> }): Reac
     } else {
       setLoading(true);
       try {
-        const response = await fetch('http://192.168.1.22:9001/login', {
+        const response = await fetch(Platform.OS==='android'?'http://10.0.2.2:5000/login' :'http://localhost:5000/login', {
       method: 'post',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

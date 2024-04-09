@@ -29,19 +29,24 @@
 // });
 // export default AudioStream;
 //@ts-nocheck
+// 
+
+
 import React from 'react';
-import { View, Image, Button, Platform } from 'react-native';
+import { View, Button, Platform } from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker';
+import Video from 'react-native-video';
+
 
 const SERVER_URL = 'http://10.0.2.2:3000';
 
-const createFormData = (photo, body = {}) => {
+const createFormData = (video, body = {}) => {
   const data = new FormData();
 
-  data.append('photo', {
-    name: photo.assets[0].fileName,
-    type: photo.assets[0].type,
-    uri: Platform.OS === 'ios' ? photo.uri.replace('file://', '') : photo.assets[0].uri,
+  data.append('video', {
+    name: video.assets[0].fileName,
+    type: video.assets[0].type,
+    uri: Platform.OS === 'ios' ? video.uri.replace('file://', '') : video.assets[0].uri,
   });
 
   Object.keys(body).forEach((key) => {
@@ -51,22 +56,22 @@ const createFormData = (photo, body = {}) => {
   return data;
 };
 const AudioStream = () => {
-  const [photo, setPhoto] = React.useState(null);
+  const [video, setVideo] = React.useState(null);
 
-  const handleChoosePhoto = () => {
-    launchImageLibrary({ noData: true }, (response) => {
+  const handleChooseVideo = () => {
+    launchImageLibrary({ noData: true, mediaType:'video' }, (response) => {
       console.log('response after selecting from gallery:',response);
       if (response) {
-        setPhoto(response);
-        console.log('Photo state after selecting from gallery:',photo);
+        setVideo(response);
+        console.log('Video state after selecting from gallery:',video);
       }
     });
   };
 
-  const handleUploadPhoto = () => {
+  const handleUploadVideo = () => {
     fetch(`${SERVER_URL}/api/upload`, {
       method: 'POST',
-      body: createFormData(photo, { userId: '123' }),
+      body: createFormData(video, { userId: '123' }),
     })
       .then((response) => response.json())
       .then((response) => {
@@ -79,16 +84,17 @@ const AudioStream = () => {
 
   return (
     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-      {photo && (
+      {video && (
         <>
-          <Image
-            source={{ uri: photo.assets[0].uri }}
-            style={{ width: 300, height: 300 }}
-          />
-          <Button title="Upload Photo" onPress={handleUploadPhoto} />
+          {/* <Video
+                source={{ uri: video.uri }}
+                style={{ flex: 1 }}
+                controls
+              /> */}
+          <Button title="Upload Video" onPress={handleUploadVideo} />
         </>
       )}
-      <Button title="Choose Photo" onPress={handleChoosePhoto} />
+      <Button title="Choose Video" onPress={handleChooseVideo} />
     </View>
   );
 };

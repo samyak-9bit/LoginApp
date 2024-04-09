@@ -1,14 +1,17 @@
 import {NavigationProp} from '@react-navigation/native';
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useRef, useState, useCallback} from 'react';
 import {
   ActivityIndicator,
   StyleSheet,
   View,
   Text,
-  TouchableOpacity,
+  TouchableOpacity, Alert, Linking, Platform,
 } from 'react-native';
 import {Camera, CameraDevice} from 'react-native-vision-camera';
 import Video from 'react-native-video';
+import Permissions, {PERMISSIONS} from 'react-native-permissions';
+import { CameraRoll } from "@react-native-camera-roll/camera-roll";
+import axios from 'axios';
 
 function VideoRecord({
   navigation,
@@ -19,8 +22,124 @@ function VideoRecord({
   const [isRecording, setIsRecording] = useState(false);
   const [isRecorded, setIsRecorded] = useState(false);
   const [videoPath, setVideoPath] = useState('');
+  const [hasPermission, setHasPermission] = useState<boolean>(false);
+
 
   const camera = useRef<Camera>(null);
+
+  const openSettingsAlert = useCallback(({title}: {title: string}) => {
+    Alert.alert(title, '', [
+      {
+        isPreferred: true,
+        style: 'default',
+        text: 'Open Settings',
+        onPress: () => Linking?.openSettings(),
+      },
+      {
+        isPreferred: false,
+        style: 'destructive',
+        text: 'Cancel',
+        onPress: () => {},
+      },
+    ]);
+  }, []);
+
+  const checkAndroidPermissions = useCallback(async () => {
+    if (parseInt(Platform.Version as string, 10) >= 33) {
+      const permissions = await Permissions.checkMultiple([
+        PERMISSIONS.ANDROID.READ_MEDIA_IMAGES,
+        PERMISSIONS.ANDROID.READ_MEDIA_VIDEO,
+      ]);
+      if (
+        permissions[PERMISSIONS.ANDROID.READ_MEDIA_IMAGES] ===
+          Permissions.RESULTS.GRANTED &&
+        permissions[PERMISSIONS.ANDROID.READ_MEDIA_VIDEO] ===
+          Permissions.RESULTS.GRANTED
+      ) {
+        setHasPermission(true);
+        return;
+      }
+      const res = await Permissions.requestMultiple([
+        PERMISSIONS.ANDROID.READ_MEDIA_IMAGES,
+        PERMISSIONS.ANDROID.READ_MEDIA_VIDEO,
+      ]);
+      if (
+        res[PERMISSIONS.ANDROID.READ_MEDIA_IMAGES] ===
+          Permissions.RESULTS.GRANTED &&
+        res[PERMISSIONS.ANDROID.READ_MEDIA_VIDEO] ===
+          Permissions.RESULTS.GRANTED
+      ) {
+        setHasPermission(true);
+      }
+      if (
+        res[PERMISSIONS.ANDROID.READ_MEDIA_IMAGES] ===
+          Permissions.RESULTS.DENIED ||
+        res[PERMISSIONS.ANDROID.READ_MEDIA_VIDEO] === Permissions.RESULTS.DENIED
+      ) {
+        checkAndroidPermissions();
+      }
+      if (
+        res[PERMISSIONS.ANDROID.READ_MEDIA_IMAGES] ===
+          Permissions.RESULTS.BLOCKED ||
+        res[PERMISSIONS.ANDROID.READ_MEDIA_VIDEO] ===
+          Permissions.RESULTS.BLOCKED
+      ) {
+        openSettingsAlert({
+          title: 'Please allow access to your photos and videos from settings',
+        });
+      }
+    } else {
+      const permission = await Permissions.check(
+        PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE,
+      );
+      if (permission === Permissions.RESULTS.GRANTED) {
+        setHasPermission(true);        
+        return;
+      }
+      const res = await Permissions.request(
+        PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE,
+      );
+      if (res === Permissions.RESULTS.GRANTED) {
+        setHasPermission(true);
+      }
+      if (res === Permissions.RESULTS.DENIED) {
+        checkAndroidPermissions();
+      }
+      if (res === Permissions.RESULTS.BLOCKED) {
+        openSettingsAlert({
+          title: 'Please allow access to the photo library from settings',
+        });
+      }
+    }
+  }, [openSettingsAlert]);
+
+  const checkGalleryPermission = useCallback(async () => {
+    if (Platform.OS === 'ios') {
+      const permission = await Permissions.check(PERMISSIONS.IOS.PHOTO_LIBRARY);
+      if (permission === Permissions.RESULTS.GRANTED ||
+          permission === Permissions.RESULTS.LIMITED) {
+        setHasPermission(true);
+        return;
+      }
+      const res = await Permissions.request(PERMISSIONS.IOS.PHOTO_LIBRARY);
+      if (res === Permissions.RESULTS.GRANTED ||
+          res === Permissions.RESULTS.LIMITED) {
+        setHasPermission(true);
+      }
+      if (res === Permissions.RESULTS.BLOCKED) {
+        openSettingsAlert({
+          title: 'Please allow access to the photo library from settings',
+        });
+      }
+    } else if (Platform.OS === 'android') {
+      checkAndroidPermissions();
+      console.log('Gallery Permission Granted:', hasPermission);
+    }
+  }, [checkAndroidPermissions, openSettingsAlert]);
+
+  useEffect(() => {
+    checkGalleryPermission();
+  }, [checkGalleryPermission]);
   
 
   useEffect(() => {
@@ -43,19 +162,16 @@ function VideoRecord({
 
   const sendVideoToServer = async () => {
     try {
-      const response = await fetch(videoPath);
-      const videoBlob = await response.blob();
-      
+      console.log(videoPath);
+      const response = await axios.get(`file://${videoPath}`, { responseType: 'blob' });
+      const videoBlob = response.data;
+      console.log(videoBlob);
       const formData = new FormData();
       formData.append('video', videoBlob, 'my_video.mp4');
-      
-      const uploadResponse = await fetch('http://10.0.2.2:5000/uploadVideo', {
-        method: 'POST',
-        body: formData,
-      });
   
-      const result = await uploadResponse.json();
-      console.log('Video uploaded successfully:', result);
+      const uploadResponse = await axios.post('http://10.0.2.2:5000/uploadVideo', formData);
+  
+      console.log('Video uploaded successfully:', uploadResponse.data);
     } catch (error) {
       console.error('Error uploading video:', error);
     }
@@ -65,7 +181,11 @@ function VideoRecord({
   const startRecording = async () => {
     setIsRecording(true);
     camera.current!.startRecording({
-      onRecordingFinished: video => {
+      onRecordingFinished: async video => {
+        const path = video.path
+        await CameraRoll.saveAsset(`file://${path}`, {
+        type: 'video',
+    })
         setVideoPath(video.path);
         console.log(video);
       },

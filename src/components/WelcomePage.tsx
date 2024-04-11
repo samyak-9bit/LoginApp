@@ -12,8 +12,11 @@ function WelcomePage({ navigation }: { navigation: NavigationProp<any> }): React
             <Text style={styles.title}>Welcome to Ninebit</Text>
             <Text style={styles.subtitle}>Unleash the Power of Innovation!</Text> 
             </View>
+            <View style={styles.curveContainer}>
+                <View style={styles.curve1}></View>
+                <View style={styles.curve2}></View>
+            </View>
             <View style={styles.secondBlock}>
-
             <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Demo')}>
                 <Text style={styles.buttonText}>🚀 Dive into the Demo! 🎩</Text>
             </TouchableOpacity>
@@ -35,7 +38,17 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         position: 'absolute',
         top: 0,
-        height:'60%'
+        height:'50%'
+    },
+    curveContainer:{
+        height:'10%',
+        flexDirection:'row',
+    },
+    curve1:{
+        backgroundColor: 'rgb(255,255,255)',
+    },
+    curve2:{
+        backgroundColor: '#007bff',
     },
     secondBlock: {
         position: 'absolute',
@@ -45,8 +58,6 @@ const styles = StyleSheet.create({
         backgroundColor: '#007bff',
         height: '40%',
         width: '100%',
-        borderTopLeftRadius: 50, // Adjust the radius as needed for the curve
-        borderTopRightRadius: 50, // Adjust the radius as needed for the curve
         overflow: 'hidden', // Ensure the contents of the block stay within the curved boundary
     },
     logoContainer: {

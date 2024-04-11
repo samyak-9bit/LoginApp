@@ -19,6 +19,8 @@ import UserUpsert from './components/UserUpsert';
 import socketService from './utils/socketService';
 import VideoUpload from './components/VideoUpload';
 import AudioStream from './components/AudioStream';
+import WelcomePage from './components/WelcomePage';
+import AudioForm from './components/AudioForm';
 
 export type RootStackParamList = {
   Users: undefined;
@@ -29,10 +31,12 @@ export type RootStackParamList = {
                       password: string,                     
                     } };
   Register: undefined;
-  Welcome: undefined;
+  LoggedIn: undefined;
   Login: undefined;
   VideoScreen: undefined;
-  ImageUpload: undefined;
+  AudioStream: undefined;
+  AudioForm: undefined;
+  Welcome: undefined;
 };
 
 const RootStack = createNativeStackNavigator<RootStackParamList>();
@@ -86,12 +90,14 @@ function App(): React.JSX.Element {
             <>
            <RootStack.Screen name="Users" component={UsersPage}/>
            <RootStack.Screen name="UserUpsert" component={UserUpsert}/>
-           <RootStack.Screen name="Welcome" component={LoggedInPage} />
+           <RootStack.Screen name="LoggedIn" component={LoggedInPage} />
            </>
           ):(
             <>
-                 <RootStack.Screen name="ImageUpload" component={AudioStream}/> 
-            <RootStack.Screen name="VideoScreen" component={VideoUpload}/>
+          <RootStack.Screen name="Welcome" component={WelcomePage}/>
+          <RootStack.Screen name="AudioForm" component={AudioForm}/>
+          <RootStack.Screen name="AudioStream" component={AudioStream}/> 
+          <RootStack.Screen name="VideoScreen" component={VideoUpload}/>
           <RootStack.Screen name="Login" component={NewLoginPage} />
           <RootStack.Screen name="Register" component={RegistrationPage} />
           </>

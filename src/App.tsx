@@ -17,7 +17,7 @@ import { ToastProvider } from 'react-native-toast-notifications';
 import UsersPage from './components/UsersPage';
 import UserUpsert from './components/UserUpsert';
 import socketService from './utils/socketService';
-import VideoRecord from './components/VideoRecord';
+import VideoUpload from './components/VideoUpload';
 import AudioStream from './components/AudioStream';
 
 export type RootStackParamList = {
@@ -31,7 +31,7 @@ export type RootStackParamList = {
   Register: undefined;
   Welcome: undefined;
   Login: undefined;
-  RecordScreen: undefined;
+  VideoScreen: undefined;
   ImageUpload: undefined;
 };
 
@@ -90,8 +90,8 @@ function App(): React.JSX.Element {
            </>
           ):(
             <>
-          <RootStack.Screen name="ImageUpload" component={AudioStream}/>
-          <RootStack.Screen name="RecordScreen" component={VideoRecord}/>
+                 <RootStack.Screen name="ImageUpload" component={AudioStream}/> 
+            <RootStack.Screen name="VideoScreen" component={VideoUpload}/>
           <RootStack.Screen name="Login" component={NewLoginPage} />
           <RootStack.Screen name="Register" component={RegistrationPage} />
           </>

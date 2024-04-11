@@ -4,7 +4,6 @@ import { StyleSheet, TouchableOpacity, View, Text} from 'react-native';
 import { NavigationProp} from '@react-navigation/native';
 import LiveAudioStream from 'react-native-live-audio-stream';
 import { Buffer } from 'buffer';
-import socketService from '../utils/socketService';
 
 function AudioStream({ navigation }: { navigation: NavigationProp<any> }): React.JSX.Element {
 
@@ -20,21 +19,31 @@ function AudioStream({ navigation }: { navigation: NavigationProp<any> }): React
 
     LiveAudioStream.on('data', data => {
       var chunk = Buffer.from(data, 'base64');
-       //@ts-ignore
-      socketService.socket.emit('newData',chunk);
-      console.log("Chunk Created...");
+      sendBufferToServer(chunk);
     });
 
+    const sendBufferToServer = (buffer) => {
+      fetch('http://10.0.2.2:5000/audio', {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/octet-stream' // Set content type as binary
+          },
+          body: buffer
+      })
+      .then(response => {
+          console.log('Buffer sent successfully:', response);
+      })
+      .catch(error => {
+          console.error('Error sending buffer:', error);
+      });
+  };
+
     const startRecording=()=>{
-       //@ts-ignore
-      socketService.socket.emit('startRecording');
       LiveAudioStream.start();
     }
 
     const stopRecording=()=>{
       LiveAudioStream.stop();
-       //@ts-ignore
-      socketService.socket.emit('stopRecording');
     }
 
     return (
@@ -70,82 +79,82 @@ export default AudioStream;
 // 
 
 
-// import React from 'react';
-// import { View, Button, Platform } from 'react-native';
-// import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
-// import Video from 'react-native-video';
+// // import React from 'react';
+// // import { View, Button, Platform } from 'react-native';
+// // import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
+// // import Video from 'react-native-video';
 
 
-// const SERVER_URL = 'http://10.0.2.2:3000';
+// // const SERVER_URL = 'http://10.0.2.2:3000';
 
-// const createFormData = (video, body = {}) => {
-//   const data = new FormData();
+// // const createFormData = (video, body = {}) => {
+// //   const data = new FormData();
 
-//   data.append('video', {
-//     name: video.assets[0].fileName,
-//     type: video.assets[0].type,
-//     uri: Platform.OS === 'ios' ? video.uri.replace('file://', '') : video.assets[0].uri,
-//   });
+// //   data.append('video', {
+// //     name: video.assets[0].fileName,
+// //     type: video.assets[0].type,
+// //     uri: Platform.OS === 'ios' ? video.uri.replace('file://', '') : video.assets[0].uri,
+// //   });
 
-//   Object.keys(body).forEach((key) => {
-//     data.append(key, body[key]);
-//   });
+// //   Object.keys(body).forEach((key) => {
+// //     data.append(key, body[key]);
+// //   });
 
-//   return data;
-// };
-// const AudioStream = () => {
-//   const [video, setVideo] = React.useState(null);
+// //   return data;
+// // };
+// // const AudioStream = () => {
+// //   const [video, setVideo] = React.useState(null);
 
-//   const handleChooseVideo = () => {
-//     launchImageLibrary({ noData: true, mediaType:'video' }, (response) => {
-//       console.log('response after selecting from gallery:',response);
-//       if (response) {
-//         setVideo(response);
-//         console.log('Video state after selecting from gallery:',video);
-//       }
-//     });
-//   };
+// //   const handleChooseVideo = () => {
+// //     launchImageLibrary({ noData: true, mediaType:'video' }, (response) => {
+// //       console.log('response after selecting from gallery:',response);
+// //       if (response) {
+// //         setVideo(response);
+// //         console.log('Video state after selecting from gallery:',video);
+// //       }
+// //     });
+// //   };
 
-//   const handleCamera = () =>{
-//     launchCamera({ noData: true, mediaType:'video' }, (response) => {
-//         console.log('response after selecting from gallery:',response);
-//         if (response) {
-//           setVideo(response);
-//           console.log('Video state after selecting from gallery:',video);
-//         }
-//       });
-//   }
+// //   const handleCamera = () =>{
+// //     launchCamera({ noData: true, mediaType:'video' }, (response) => {
+// //         console.log('response after selecting from gallery:',response);
+// //         if (response) {
+// //           setVideo(response);
+// //           console.log('Video state after selecting from gallery:',video);
+// //         }
+// //       });
+// //   }
 
-//   const handleUploadVideo = () => {
-//     fetch(`${SERVER_URL}/api/upload`, {
-//       method: 'POST',
-//       body: createFormData(video, { userId: '123' }),
-//     })
-//       .then((response) => response.json())
-//       .then((response) => {
-//         console.log('response', response);
-//       })
-//       .catch((error) => {
-//         console.log('error', error);
-//       });
-//   };
+// //   const handleUploadVideo = () => {
+// //     fetch(`${SERVER_URL}/api/upload`, {
+// //       method: 'POST',
+// //       body: createFormData(video, { userId: '123' }),
+// //     })
+// //       .then((response) => response.json())
+// //       .then((response) => {
+// //         console.log('response', response);
+// //       })
+// //       .catch((error) => {
+// //         console.log('error', error);
+// //       });
+// //   };
 
-//   return (
-//     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-//       {video && (
-//         <>
-//           {/* <Video
-//                 source={{ uri: video.uri }}
-//                 style={{ flex: 1 }}
-//                 controls
-//               /> */}
-//           <Button title="Upload Video" onPress={handleUploadVideo} />
-//         </>
-//       )}
-//       <Button title="Choose Video" onPress={handleChooseVideo} />
-//       <Button title="Record now" onPress={handleCamera} />
-//     </View>
-//   );
-// };
+// //   return (
+// //     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+// //       {video && (
+// //         <>
+// //           {/* <Video
+// //                 source={{ uri: video.uri }}
+// //                 style={{ flex: 1 }}
+// //                 controls
+// //               /> */}
+// //           <Button title="Upload Video" onPress={handleUploadVideo} />
+// //         </>
+// //       )}
+// //       <Button title="Choose Video" onPress={handleChooseVideo} />
+// //       <Button title="Record now" onPress={handleCamera} />
+// //     </View>
+// //   );
+// // };
 
-// export default AudioStream;
+// // export default AudioStream;

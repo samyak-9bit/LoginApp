@@ -48,6 +48,7 @@ const VideoUpload = () => {
   };
 
   const handleUploadVideo = () => {
+    console.log(video)
     fetch(`${SERVER_URL}/api/upload`, {
       method: 'POST',
       body: createFormData(video, { userId: '123' }),

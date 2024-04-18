@@ -10,7 +10,7 @@ import AudioRecorderPlayer, {
 } from 'react-native-audio-recorder-player';
 import { Platform, PermissionsAndroid } from 'react-native';
 import RNFS from 'react-native-fs';
-import {pick} from 'react-native-document-picker';
+import {pick,types} from 'react-native-document-picker';
 
 const createFormData = (audioPath,audioName, body = {}) => {
   console.log(audioPath);
@@ -169,6 +169,7 @@ const AudioForm = ({ navigation }: { navigation: NavigationProp<any> }): React.J
     try {
       const response = await pick({
        mode:'open',
+       type: types.audio,
 
       });
       setFileResponse(response);
@@ -176,6 +177,33 @@ const AudioForm = ({ navigation }: { navigation: NavigationProp<any> }): React.J
     } catch (err) {
       console.warn(err);
     }
+  }
+
+  const uploadSelectedAudio = () =>{
+  const data = new FormData();
+  data.append('myfile', {
+    name: fileResponse[0].name,
+    type: 'multipart/formdata',   
+    uri: Platform.OS === 'ios' ? audioPath.replace('file://', '') : fileResponse[0].uri, // Remove 'file://' prefix for iOS
+  });
+
+  fetch(`http://192.168.1.22:9001/blob/audios`, {
+    method: 'POST',
+    body: data,
+    headers: { authtoken: 'allow' },
+  })
+    .then((response) => response.json())
+    .then((response) => {
+      console.log('response', response);
+      if(response.status === "Success"){
+        alert('Audio uploaded successfully!');
+        setVideo(null);
+    }
+    })
+    .catch((error) => {
+      console.log('error', error);
+    });
+  
   }
 
   return (
@@ -197,7 +225,7 @@ const AudioForm = ({ navigation }: { navigation: NavigationProp<any> }): React.J
         </Text>
       </TouchableOpacity>
       <TouchableOpacity style={styles.button}>
-        <Text style={styles.buttonText} onPress={deviceUpload()}>
+        <Text style={styles.buttonText} onPress={()=>{deviceUpload()}}>
           Choose from Device
         </Text>
       </TouchableOpacity>

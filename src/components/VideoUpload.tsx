@@ -4,20 +4,18 @@ import { View, Platform, Text, TouchableOpacity, StyleSheet } from 'react-native
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 import Video from 'react-native-video';
 
-const SERVER_URL = 'http://10.0.2.2:5000';
-
 const createFormData = (video, body = {}) => {
   const data = new FormData();
 
-  data.append('video', {
+  data.append('myfile', {
     name: video.assets[0].fileName,
-    type: video.assets[0].type,
+    type: 'multipart/formdata',
     uri: Platform.OS === 'ios' ? video.uri.replace('file://', '') : video.assets[0].uri,
   });
 
-  Object.keys(body).forEach((key) => {
-    data.append(key, body[key]);
-  });
+  // Object.keys(body).forEach((key) => {
+  //   data.append(key, body[key]);
+  // });
 
   return data;
 };
@@ -49,13 +47,18 @@ const VideoUpload = () => {
 
   const handleUploadVideo = () => {
     console.log(video)
-    fetch(`${SERVER_URL}/api/upload`, {
+    fetch(`http://192.168.1.22:9001/blob/videos`, {
       method: 'POST',
-      body: createFormData(video, { userId: '123' }),
+      body: createFormData(video),
+      headers: { authtoken: 'allow' },
     })
       .then((response) => response.json())
       .then((response) => {
         console.log('response', response);
+        if(response.status === "Success"){
+          alert('Video uploaded successfully!');
+          setVideo(null);
+      }
       })
       .catch((error) => {
         console.log('error', error);

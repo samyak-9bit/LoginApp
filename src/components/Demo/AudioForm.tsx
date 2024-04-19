@@ -1,5 +1,5 @@
 //@ts-nocheck
-import { NavigationProp } from '@react-navigation/native';
+import { NavigationProp} from '@react-navigation/native';
 import React, { useState } from 'react';
 import { TouchableOpacity, View, Text, StyleSheet } from 'react-native';
 import AudioRecorderPlayer, {
@@ -10,7 +10,12 @@ import AudioRecorderPlayer, {
 } from 'react-native-audio-recorder-player';
 import { Platform, PermissionsAndroid } from 'react-native';
 import RNFS from 'react-native-fs';
-import {pick,types} from 'react-native-document-picker';
+import { Icon } from 'react-native-paper';
+import { deviceBtnText, recordingHeading, startRecordingText, stopRecordingText, uploadFailureMessage, uploadRecordingText } from './constants';
+import { audioPostUrl } from './Urls';
+import { CustomModal } from './SuccessModal';
+import { showToast } from '../common Functions/ShowErrorToast';
+
 
 const createFormData = (audioPath,audioName, body = {}) => {
   console.log(audioPath);
@@ -18,7 +23,7 @@ const createFormData = (audioPath,audioName, body = {}) => {
   data.append('myfile', {
     name: audioName,
     type: 'multipart/formdata',   
-    uri: Platform.OS === 'ios' ? audioPath.replace('file://', '') : `file:////data/user/0/com.myawesomeproject/cache/${audioName}`, // Remove 'file://' prefix for iOS
+    uri: Platform.OS === 'ios' ? audioPath.replace('file://', '') : `file:////${audioPath}`, // Remove 'file://' prefix for iOS
   });
 
   // Object.keys(body).forEach((key) => {
@@ -29,6 +34,7 @@ const createFormData = (audioPath,audioName, body = {}) => {
 };
 
 const AudioForm = ({ navigation }: { navigation: NavigationProp<any> }): React.JSX.Element => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [audio, setAudio] = useState({
     isLoggingIn: false,
     recordSecs: 0,
@@ -40,10 +46,25 @@ const AudioForm = ({ navigation }: { navigation: NavigationProp<any> }): React.J
   });
   const [audioPath,setAudioPath] = useState('');
   const [audioName,setAudioName] = useState('');
-  const [fileResponse, setFileResponse] = useState([]);
+  const [modalVisible, setModalVisible] = useState(false);
+
 
   const audioRecorderPlayer = new AudioRecorderPlayer();
   audioRecorderPlayer.setSubscriptionDuration(0.09);
+
+  const resetValues=()=>{
+    setAudio({
+      isLoggingIn: false,
+      recordSecs: 0,
+      recordTime: '00:00:00',
+      currentPositionSec: 0,
+      currentDurationSec: 0,
+      playTime: '00:00:00',
+      duration: '00:00:00',
+    });
+    setAudioPath('');
+    setAudioName('');
+  }
 
   const requestStoragePermission = async () => {
     try {
@@ -75,7 +96,7 @@ const AudioForm = ({ navigation }: { navigation: NavigationProp<any> }): React.J
   
   const startRecording = async () => {
     try {
-      await requestStoragePermission(); // Request storage permission
+      await requestStoragePermission(); 
       const timestamp = Date.now();
       const name = `audio_${timestamp}.m4a`;
       setAudioName(name);
@@ -117,121 +138,97 @@ const AudioForm = ({ navigation }: { navigation: NavigationProp<any> }): React.J
     }
   };
 
-  const onStartPlay = async () => {
-    try {
-      console.log('onStartPlay');
-      const cacheDirectory = getCacheDirectory();
-      const timestamp = Date.now();
-      const path = `${cacheDirectory}/audio_${timestamp}.m4a`; // Construct the correct file path
-      console.log('Playback path:', path);
-      const msg = await audioRecorderPlayer.startPlayer(audioPath); // Start playback using the correct path
-      console.log('Playback message:', msg);
-      audioRecorderPlayer.setVolume(1.0);
-      audioRecorderPlayer.addPlayBackListener((e) => {
-        if (e.current_position === e.duration) {
-          console.log('finished');
-          audioRecorderPlayer.stopPlayer();
-        }
-        setAudio((prevAudio) => ({
-          ...prevAudio,
-          currentPositionSec: e.current_position,
-          currentDurationSec: e.duration,
-          playTime: audioRecorderPlayer.mmssss(Math.floor(e.current_position)),
-          duration: audioRecorderPlayer.mmssss(Math.floor(e.duration)),
-        }));
-      });
-    } catch (error) {
-      console.error('Error starting playback:', error);
-    }
-  };
+  // const onStartPlay = async () => {
+  //   try {
+  //     console.log('onStartPlay');
+  //     const msg = await audioRecorderPlayer.startPlayer(`file:////${audioPath}`); 
+  //     console.log('Playback message:', msg);
+  //     audioRecorderPlayer.setVolume(1.0);
+  //     audioRecorderPlayer.addPlayBackListener((e) => {
+  //       if (e.current_position === e.duration) {
+  //         console.log('finished');
+  //         audioRecorderPlayer.stopPlayer();
+  //       }
+  //       setAudio((prevAudio) => ({
+  //         ...prevAudio,
+  //         currentPositionSec: e.current_position,
+  //         currentDurationSec: e.duration,
+  //         playTime: audioRecorderPlayer.mmssss(Math.floor(e.current_position)),
+  //         duration: audioRecorderPlayer.mmssss(Math.floor(e.duration)),
+  //       }));
+  //     });
+  //   } catch (error) {
+  //     console.error('Error starting playback:', error);
+  //   }
+  // };
 
   const uploadRecording = () => {
-    fetch(`http://192.168.1.22:9001/blob/audios`, {
+    fetch(audioPostUrl, {
       method: 'POST',
       body: createFormData(audioPath, audioName),
       headers: { authtoken: 'allow' },
     })
-    .then((response) => response.json())
-    .then((response) => {
-      console.log('response', response);
-      if(response.status === "Success"){
-        alert('Audio uploaded successfully!');
-        setAudioName('');
-        setAudioPath('');
-    }
-    })
-    .catch((error) => {
-      console.log('error', error);
-    });
+    .then(response => response.json())
+      .then(response => {
+        console.log('response', response);
+        if (response.status === 'Success') {
+          setModalVisible(true);
+          resetValues();
+        }else{
+          showToast(uploadFailureMessage,'warning');
+        }
+      })
+      .catch(error => {
+        console.log('error', error);
+        showToast(uploadFailureMessage,'warning');
+      });
   };
   
-  const deviceUpload = async () => {
-    try {
-      const response = await pick({
-       mode:'open',
-       type: types.audio,
-
-      });
-      setFileResponse(response);
-      console.log(response);
-    } catch (err) {
-      console.warn(err);
-    }
-  }
-
-  const uploadSelectedAudio = () =>{
-  const data = new FormData();
-  data.append('myfile', {
-    name: fileResponse[0].name,
-    type: 'multipart/formdata',   
-    uri: Platform.OS === 'ios' ? audioPath.replace('file://', '') : fileResponse[0].uri, // Remove 'file://' prefix for iOS
-  });
-
-  fetch(`http://192.168.1.22:9001/blob/audios`, {
-    method: 'POST',
-    body: data,
-    headers: { authtoken: 'allow' },
-  })
-    .then((response) => response.json())
-    .then((response) => {
-      console.log('response', response);
-      if(response.status === "Success"){
-        alert('Audio uploaded successfully!');
-        setVideo(null);
-    }
-    })
-    .catch((error) => {
-      console.log('error', error);
-    });
-  
-  }
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>🎵 Let's Record Some Magic 🎵</Text>
-      <TouchableOpacity style={styles.button}>
-        <Text style={styles.buttonText} onPress={startRecording}>
-          Start Recording
-        </Text>
+       <CustomModal
+        visible={modalVisible} 
+        onDismiss={()=>{setModalVisible(false)}} 
+        contentContainerStyle={{ backgroundColor: 'white', padding: 20 }} 
+        buttonText="Show"
+        buttonStyle={{ marginTop: 30 }}
+      />
+       <TouchableOpacity style={styles.backIconContainer} onPress={()=>{navigation.goBack()}}>
+      <Icon
+      source={'arrow-left-bold-circle'}
+      size={35}
+      color='rgb(120,120,120)'
+      />
       </TouchableOpacity>
-      <TouchableOpacity style={styles.button}>
-        <Text style={styles.buttonText} onPress={stopRecording}>
-          Stop Recording
-        </Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.button}>
-        <Text style={styles.buttonText} onPress={uploadRecording}>
-          Upload Recording
-        </Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.button}>
-        <Text style={styles.buttonText} onPress={()=>{deviceUpload()}}>
-          Choose from Device
-        </Text>
-      </TouchableOpacity>
+          <Text style={styles.title}>{recordingHeading}</Text>
+          <TouchableOpacity style={styles.button}>
+            <Text style={styles.buttonText} onPress={startRecording}>
+             {startRecordingText}
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.button}>
+            <Text style={styles.buttonText} onPress={stopRecording}>
+              {stopRecordingText}
+            </Text>
+          </TouchableOpacity>
+          {audioPath !== '' && (
+        <TouchableOpacity style={styles.button} onPress={uploadRecording}>
+          <Text style={styles.buttonText}>{uploadRecordingText}</Text>
+        </TouchableOpacity>
+      )}
+          <TouchableOpacity style={styles.button}>
+            <Text style={styles.buttonText} onPress={() =>
+            {
+            resetValues();
+            navigation.navigate('AudioFromDevice');
+            }}>
+             {deviceBtnText}
+            </Text>
+          </TouchableOpacity>
     </View>
   );
-};
+}  
 
 const styles = StyleSheet.create({
   container: {
@@ -247,6 +244,11 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: '#333',
   },
+  backIconContainer:{
+    position:'absolute',
+    top:5,
+    left:5
+      },
   button: {
     backgroundColor: '#007bff',
     paddingVertical: 12,

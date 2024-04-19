@@ -17,11 +17,15 @@ import { ToastProvider } from 'react-native-toast-notifications';
 import UsersPage from './components/UsersPage';
 import UserUpsert from './components/UserUpsert';
 import socketService from './utils/socketService';
-import VideoUpload from './components/VideoUpload';
-import AudioStream from './components/AudioStream';
-import WelcomePage from './components/WelcomePage';
-import AudioForm from './components/AudioForm';
-import ImageForm from './components/ImageForm';
+import AudioStream from './components/Demo/AudioStream';
+import WelcomePage from './components/Demo/WelcomePage';
+import AudioForm from './components/Demo/AudioForm';
+import ImageForm from './components/Demo/ImageForm';
+import VideoForm from './components/Demo/VideoForm';
+import PdfForm from './components/Demo/PdfForm';
+import AudioFromDevice from './components/Demo/AudioFromDevice';
+import SelectionPage from './components/Demo/SelectionPage';
+import QuestionAnswer from './components/Demo/QuestionAnswer';
 
 export type RootStackParamList = {
   Users: undefined;
@@ -39,6 +43,10 @@ export type RootStackParamList = {
   AudioForm: undefined;
   Welcome: undefined;
   ImageForm:undefined;
+  PdfForm:undefined;
+  AudioFromDevice:undefined;
+  Select:undefined;
+  QuestionAnswer:undefined;
 };
 
 const RootStack = createNativeStackNavigator<RootStackParamList>();
@@ -96,13 +104,17 @@ function App(): React.JSX.Element {
            </>
           ):(
             <>
-          <RootStack.Screen name="AudioForm" component={AudioForm}/>
-          <RootStack.Screen name="VideoForm" component={VideoUpload}/>
-          <RootStack.Screen name="ImageForm" component= {ImageForm}/>
           <RootStack.Screen name="Welcome" component={WelcomePage}/>
+          <RootStack.Screen name="Select" component={SelectionPage}/>
+          <RootStack.Screen name="AudioForm" component={AudioForm}/>
+          <RootStack.Screen name="PdfForm" component={PdfForm}/>
+          <RootStack.Screen name="VideoForm" component={VideoForm}/>
+          <RootStack.Screen name="ImageForm" component= {ImageForm}/>
           <RootStack.Screen name="AudioStream" component={AudioStream}/> 
           <RootStack.Screen name="Login" component={NewLoginPage} />
           <RootStack.Screen name="Register" component={RegistrationPage} />
+          <RootStack.Screen name="AudioFromDevice" component={AudioFromDevice} />
+          <RootStack.Screen name="QuestionAnswer" component={QuestionAnswer} />
           </>
           )}
         

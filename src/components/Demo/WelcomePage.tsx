@@ -3,16 +3,17 @@ import React from 'react';
 import { View, StyleSheet, Text, TouchableOpacity, Image } from 'react-native';
 import { Icon } from 'react-native-paper';
 import Svg, { Path } from 'react-native-svg';
+import { demoHeading, welcomeHeading, welcomeSubHeading } from './constants';
 
 function WelcomePage({ navigation }: { navigation: NavigationProp<any> }): React.JSX.Element {
   return (
     <View style={styles.container}>
       <View style={styles.firstBlock}>
         <View style={styles.logoContainer}>
-          <Image source={require('../assets/solution.png')} style={styles.logo} />
+          <Image source={require('./assets/solution.png')} style={styles.logo} />
         </View>
-        <Text style={styles.title}>Welcome to Ninebit</Text>
-        <Text style={styles.subtitle}>Unleash the Power of Innovation!</Text>
+        <Text style={styles.title}>{welcomeHeading}</Text>
+        <Text style={styles.subtitle}>{welcomeSubHeading}</Text>
       </View>
       <Svg height="100%" width="100%" viewBox="0 0 1440 320">
         <Path
@@ -23,9 +24,9 @@ function WelcomePage({ navigation }: { navigation: NavigationProp<any> }): React
       </Svg>
       <View style={styles.secondBlock}>
         {/* <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Demo')}> */}
-          <Text style={styles.buttonText}>🚀 Dive into the Demo! 🎩</Text>
+          <Text style={styles.buttonText}>{demoHeading}</Text>
         {/* </TouchableOpacity> */}
-         <TouchableOpacity onPress={() => navigation.navigate('AudioForm')} style={styles.navBtn}>
+         <TouchableOpacity onPress={() => navigation.navigate('Select')} style={styles.navBtn}>
         <Icon
         source={'arrow-right-thick'}
         size={28}
@@ -41,7 +42,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgb(255, 245, 238)',
+    backgroundColor: 'rgb(243, 245, 238)',
   },
   firstBlock: {
     flex: 1,
@@ -90,6 +91,7 @@ right:15
     marginBottom: 30,
     textAlign: 'center',
     color: '#666666', // Choose your subtitle color
+    fontWeight:'500'
   },
   button: {
     backgroundColor: '#007bff', // Choose your button color

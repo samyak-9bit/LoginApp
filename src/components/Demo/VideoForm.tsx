@@ -1,8 +1,14 @@
 //@ts-nocheck
+import { useNavigation } from '@react-navigation/native';
 import React from 'react';
 import { View, Platform, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
+import { Icon } from 'react-native-paper';
 import Video from 'react-native-video';
+import { another, choose, getAVideoHeading, recordBtn, uploadFailureMessage, uploadVideoBtn, videoText } from './constants';
+import { videoPostUrl } from './Urls';
+import { CustomModal } from './SuccessModal';
+import { showToast } from '../common Functions/ShowErrorToast';
 
 const createFormData = (video, body = {}) => {
   const data = new FormData();
@@ -20,8 +26,11 @@ const createFormData = (video, body = {}) => {
   return data;
 };
 
-const VideoUpload = () => {
+const VideoForm = () => {
   const [video, setVideo] = React.useState(null);
+  const [modalVisible, setModalVisible] = React.useState(false);
+
+  const navigation = useNavigation();
 
   const handleChooseVideo = () => {
     launchImageLibrary({ noData: true, mediaType:'video' }, (response) => {
@@ -47,7 +56,7 @@ const VideoUpload = () => {
 
   const handleUploadVideo = () => {
     console.log(video)
-    fetch(`http://192.168.1.22:9001/blob/videos`, {
+    fetch(videoPostUrl, {
       method: 'POST',
       body: createFormData(video),
       headers: { authtoken: 'allow' },
@@ -56,18 +65,35 @@ const VideoUpload = () => {
       .then((response) => {
         console.log('response', response);
         if(response.status === "Success"){
-          alert('Video uploaded successfully!');
+          setModalVisible(true);
           setVideo(null);
+      }else{
+        showToast(uploadFailureMessage,'warning');
       }
       })
       .catch((error) => {
+        showToast(uploadFailureMessage,'warning');
         console.log('error', error);
       });
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Get me a Video!</Text>
+      <CustomModal
+        visible={modalVisible} 
+        onDismiss={()=>{setModalVisible(false)}} 
+        contentContainerStyle={{ backgroundColor: 'white', padding: 20 }} 
+        buttonText="Show"
+        buttonStyle={{ marginTop: 30 }}
+      />
+        <TouchableOpacity style={styles.backIconContainer} onPress={()=>{navigation.goBack()}}>
+      <Icon
+      source={'arrow-left-bold-circle'}
+      size={35}
+      color='rgb(120,120,120)'
+      />
+      </TouchableOpacity>
+      <Text style={styles.title}>{getAVideoHeading}</Text>
       {video && (
         <>
           <Video
@@ -76,15 +102,15 @@ const VideoUpload = () => {
             controls
           />
           <TouchableOpacity onPress={handleUploadVideo} style={styles.button}>
-            <Text style={styles.buttonText}>Upload Video</Text>
+            <Text style={styles.buttonText}>{uploadVideoBtn}</Text>
           </TouchableOpacity>
         </>
       )}
       <TouchableOpacity onPress={handleChooseVideo} style={styles.button}>
-        <Text style={styles.buttonText}>Choose {video && 'Another'} Video</Text>
+        <Text style={styles.buttonText}>{choose} {video && another} {videoText}</Text>
       </TouchableOpacity>
       <TouchableOpacity onPress={handleCamera} style={styles.button}>
-        <Text style={styles.buttonText}>Record now</Text>
+        <Text style={styles.buttonText}>{recordBtn}</Text>
       </TouchableOpacity>
     </View>
   );
@@ -103,6 +129,11 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginTop: 15
   },
+  backIconContainer:{
+    position:'absolute',
+    top:5,
+    left:5
+      },
   video: {
     flex: 1,
     width: '100%',
@@ -124,7 +155,7 @@ const styles = StyleSheet.create({
   },
 });
 
-export default VideoUpload;
+export default VideoForm;
 
 
 

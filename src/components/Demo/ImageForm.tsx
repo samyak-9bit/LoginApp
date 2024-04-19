@@ -1,7 +1,13 @@
 //@ts-nocheck
+import { useNavigation } from '@react-navigation/native';
 import React from 'react';
 import { View, Platform, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
+import { Icon } from 'react-native-paper';
+import { another, choose, clickBtn, getAnImageHeading, imageText, uploadFailureMessage, uploadImageBtn } from './constants';
+import { imagePostUrl } from './Urls';
+import { CustomModal } from './SuccessModal';
+import { showToast } from '../common Functions/ShowErrorToast';
 
 
 const createFormData = (image, body = {}) => {
@@ -22,6 +28,9 @@ const createFormData = (image, body = {}) => {
 
 const ImageForm = () => {
   const [image, setImage] = React.useState(null);
+  const [modalVisible, setModalVisible] = React.useState(false);
+
+  const navigation = useNavigation();
 
   const handleChooseImage = () => {
     launchImageLibrary({ noData: true, mediaType:'photo' }, (response) => {
@@ -47,7 +56,7 @@ const ImageForm = () => {
 
   const handleUploadImage = () => {
     console.log(image)
-    fetch(`http://192.168.1.22:9001/blob/photos`, {
+    fetch(imagePostUrl, {
       method: 'POST',
       body: createFormData(image),
       headers: { authtoken: 'allow' },
@@ -56,18 +65,35 @@ const ImageForm = () => {
       .then((response) => {
         console.log('response', response);
         if(response.status === "Success"){
-            alert('Image uploaded successfully!');
+          setModalVisible(true);
             setImage(null);
+        }else{
+          showToast(uploadFailureMessage,'warning');
         }
       })
       .catch((error) => {
+        showToast(uploadFailureMessage,'warning');
         console.log('error', error);
       });
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Get me an Image!</Text>
+      <CustomModal
+        visible={modalVisible} 
+        onDismiss={()=>{setModalVisible(false)}} 
+        contentContainerStyle={{ backgroundColor: 'white', padding: 20 }} 
+        buttonText="Show"
+        buttonStyle={{ marginTop: 30 }}
+      />
+        <TouchableOpacity style={styles.backIconContainer} onPress={()=>{navigation.goBack()}}>
+      <Icon
+      source={'arrow-left-bold-circle'}
+      size={35}
+      color='rgb(120,120,120)'
+      />
+      </TouchableOpacity>
+      <Text style={styles.title}>{getAnImageHeading}</Text>
       {image && (
         <>
           <Image
@@ -75,15 +101,15 @@ const ImageForm = () => {
             style={styles.video}
           />
           <TouchableOpacity onPress={handleUploadImage} style={styles.button}>
-            <Text style={styles.buttonText}>Upload Image</Text>
+            <Text style={styles.buttonText}>{uploadImageBtn}</Text>
           </TouchableOpacity>
         </>
       )}
       <TouchableOpacity onPress={handleChooseImage} style={styles.button}>
-        <Text style={styles.buttonText}>Choose {image && 'Another'} Image</Text>
+        <Text style={styles.buttonText}>{choose} {image && another} {imageText}</Text>
       </TouchableOpacity>
       <TouchableOpacity onPress={handleCamera} style={styles.button}>
-        <Text style={styles.buttonText}>Click now</Text>
+        <Text style={styles.buttonText}>{clickBtn}</Text>
       </TouchableOpacity>
     </View>
   );
@@ -96,6 +122,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginVertical:5,
   },
+  backIconContainer:{
+    position:'absolute',
+    top:5,
+    left:5
+      },
   title: {
     fontSize: 20,
     marginBottom: 20,

@@ -4,6 +4,8 @@ import { StyleSheet, TouchableOpacity, View, Text} from 'react-native';
 import { NavigationProp} from '@react-navigation/native';
 import LiveAudioStream from 'react-native-live-audio-stream';
 import { Buffer } from 'buffer';
+import { start, stop } from './constants';
+import { audioStreamUrl } from './Urls';
 
 function AudioStream({ navigation }: { navigation: NavigationProp<any> }): React.JSX.Element {
 
@@ -23,7 +25,7 @@ function AudioStream({ navigation }: { navigation: NavigationProp<any> }): React
     });
 
     const sendBufferToServer = (buffer) => {
-      fetch('http://10.0.2.2:5000/audio', {
+      fetch(audioStreamUrl, {
           method: 'POST',
           headers: {
               'Content-Type': 'application/octet-stream' // Set content type as binary
@@ -48,8 +50,8 @@ function AudioStream({ navigation }: { navigation: NavigationProp<any> }): React
 
     return (
       <View style={styles.container}>
-        <TouchableOpacity style={styles.button} onPress={()=>startRecording()}><Text>Start</Text></TouchableOpacity>
-        <TouchableOpacity style={[styles.button, styles.stopButton]} onPress={()=>stopRecording()}><Text>Stop</Text></TouchableOpacity>
+        <TouchableOpacity style={styles.button} onPress={()=>startRecording()}><Text>{start}</Text></TouchableOpacity>
+        <TouchableOpacity style={[styles.button, styles.stopButton]} onPress={()=>stopRecording()}><Text>{stop}</Text></TouchableOpacity>
       </View>
     );
   }

@@ -9,6 +9,7 @@ import { documentPostUrl } from './Urls';
 import { CustomModal } from './SuccessModal';
 import { showToast } from '../common Functions/ShowErrorToast';
 
+//Function to create form data for post api
 const createFormData = (file, body = {}) => {
     const data = new FormData();
   
@@ -33,7 +34,7 @@ const PdfForm = () => {
   const [modalVisible, setModalVisible] = React.useState(false);
   const navigation = useNavigation();
   
-
+//Function to choose file from device
   const handleChooseFile = async() => {
     try {
         const response = await pick({
@@ -47,7 +48,7 @@ const PdfForm = () => {
       }
   };
 
-
+//Function to handle file upload
   const handleUploadFile = () => {
     console.log(file)
     fetch(documentPostUrl, {

@@ -4,12 +4,12 @@ import React from 'react';
 import { View, Platform, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 import { Icon } from 'react-native-paper';
-import { another, choose, clickBtn, getAnImageHeading, imageText, uploadFailureMessage, uploadImageBtn } from './constants';
+import { another, choose, clickBtn, getAnImageHeading, imageText, selectedImage, uploadFailureMessage, uploadImageBtn } from './constants';
 import { imagePostUrl } from './Urls';
 import { CustomModal } from './SuccessModal';
 import { showToast } from '../common Functions/ShowErrorToast';
 
-
+//Function to create form data for post api
 const createFormData = (image, body = {}) => {
   const data = new FormData();
 
@@ -32,6 +32,7 @@ const ImageForm = () => {
 
   const navigation = useNavigation();
 
+  //Function to select file from device
   const handleChooseImage = () => {
     launchImageLibrary({ noData: true, mediaType:'photo' }, (response) => {
       if (response) {
@@ -40,10 +41,12 @@ const ImageForm = () => {
     });
   };
 
+  //Function to open camera
   const handleCamera = () =>{
     launchCamera({ noData: true, mediaType:'photo' }, handleResponse);
   }
 
+  //Function to handle camera response
   const handleResponse = (response) => {
     if (response.didCancel) {
       console.log('User cancelled image picker');
@@ -54,6 +57,7 @@ const ImageForm = () => {
     }
   };
 
+  //Function to upload image to server
   const handleUploadImage = () => {
     console.log(image)
     fetch(imagePostUrl, {
@@ -93,7 +97,7 @@ const ImageForm = () => {
       color='rgb(120,120,120)'
       />
       </TouchableOpacity>
-      <Text style={styles.title}>{getAnImageHeading}</Text>
+      <Text style={styles.title}>{image ? selectedImage :getAnImageHeading}</Text>
       {image && (
         <>
           <Image

@@ -8,6 +8,7 @@ interface ModalProps {
   onDismiss: () => void;
 }
 
+//Modal to show success 
 export const CustomModal: React.FC<ModalProps> = ({ visible, onDismiss}) => {
   return (
     <Portal>

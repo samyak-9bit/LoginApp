@@ -40,6 +40,7 @@ function UserUpsert({route}: UserProps): React.JSX.Element{
     },[user.userId]);
       
     
+    //Function to handle input change
       const handleChange = (name: string, value: string) => {
         setInputFields({
           ...inputFields,
@@ -47,15 +48,17 @@ function UserUpsert({route}: UserProps): React.JSX.Element{
         });
       };
 
+      //Function to toggle show and hide password
       const toggleShowPassword = () => {
         setShowPassword(!showPassword);
       };
     
+      //Function to handle re-Enter password input
       const handleReEnterPasswordChange = (text: string) => {
         setReEnterPassword(text);
       };
     
-    
+    //Function to handle superuser checkbox
       const handleSuperUserChange = () => {
         setInputFields({
           ...inputFields,
@@ -64,7 +67,8 @@ function UserUpsert({route}: UserProps): React.JSX.Element{
       };
     
     
-    
+
+    //Function to handle register
       const handleRegisterPress = async() => {
         if (
             inputFields.name.trim() === '' ||
@@ -134,6 +138,7 @@ function UserUpsert({route}: UserProps): React.JSX.Element{
             }
     };
 
+    //Function to handle edit 
     const handleEditPress=async()=>{
       if (
         inputFields.name.trim() === '' ||

@@ -8,6 +8,7 @@ import { audioPostUrl } from './Urls';
 import { CustomModal } from './SuccessModal';
 import { showToast } from '../common Functions/ShowErrorToast';
 
+//Function to create form data for post api
 const createFormData = (file, body = {}) => {
   const data = new FormData();
 
@@ -29,12 +30,14 @@ const createFormData = (file, body = {}) => {
   return data;
 };
 
+
 const AudioFromDevice = () => {
   const [file, setFile] = React.useState([]);
   const [modalVisible, setModalVisible] = React.useState(false);
 
   const navigation = useNavigation();
 
+  //Function to handle file selection from device
   const handleChooseFile = async () => {
     try {
       const response = await pick({
@@ -48,6 +51,7 @@ const AudioFromDevice = () => {
     }
   };
 
+  //Function to upload file
   const handleUploadFile = () => {
     console.log(file);
     fetch(audioPostUrl, {

@@ -19,10 +19,12 @@ function RegistrationPage({ navigation }: { navigation: NavigationProp<any> }): 
   const [loading, setLoading]  = React.useState(false);
   const [showPassword, setShowPassword] = React.useState(false);
 
+  //Function to toggle show and hide password
   const toggleShowPassword = () => {
     setShowPassword(!showPassword);
   };
 
+  //Handle input change
   const handleChange = (name: string, value: string) => {
     setInputFields({
       ...inputFields,
@@ -30,11 +32,13 @@ function RegistrationPage({ navigation }: { navigation: NavigationProp<any> }): 
     });
   };
 
+  //Handle re-Enter password input
   const handleReEnterPasswordChange = (text: string) => {
     setReEnterPassword(text);
   };
 
 
+  //Functiopn to handle super user checkbox
   const handleSuperUserChange = () => {
     setInputFields({
       ...inputFields,
@@ -43,7 +47,7 @@ function RegistrationPage({ navigation }: { navigation: NavigationProp<any> }): 
   };
 
 
-
+//Function to handle registration
   const handleRegisterPress = async() => {
     if (
         inputFields.name.trim() === '' ||
@@ -112,7 +116,7 @@ function RegistrationPage({ navigation }: { navigation: NavigationProp<any> }): 
         }
         }
 };
-
+//Function to handle login press
   const handleLoginPress = ()=>{
     navigation.navigate('Login');
     setInputFields({

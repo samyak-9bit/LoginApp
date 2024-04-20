@@ -16,6 +16,7 @@ import { audioPostUrl } from './Urls';
 import { CustomModal } from './SuccessModal';
 import { showToast } from '../common Functions/ShowErrorToast';
 
+//Function to create form data for post api
 
 const createFormData = (audioPath,audioName, body = {}) => {
   console.log(audioPath);
@@ -32,6 +33,7 @@ const createFormData = (audioPath,audioName, body = {}) => {
 
   return data;
 };
+
 
 const AudioForm = ({ navigation }: { navigation: NavigationProp<any> }): React.JSX.Element => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -66,6 +68,7 @@ const AudioForm = ({ navigation }: { navigation: NavigationProp<any> }): React.J
     setAudioName('');
   }
 
+  //Function to request storage permissions
   const requestStoragePermission = async () => {
     try {
       const granted = await PermissionsAndroid.request(
@@ -86,6 +89,7 @@ const AudioForm = ({ navigation }: { navigation: NavigationProp<any> }): React.J
     }
   };
   
+  //Function to get cache access
   const getCacheDirectory = () => {
     if (Platform.OS === 'ios') {
       return `${RNFS.LibraryDirectoryPath}/Caches`;
@@ -94,6 +98,7 @@ const AudioForm = ({ navigation }: { navigation: NavigationProp<any> }): React.J
     }
   };
   
+  //Function to start recording
   const startRecording = async () => {
     try {
       await requestStoragePermission(); 
@@ -124,6 +129,7 @@ const AudioForm = ({ navigation }: { navigation: NavigationProp<any> }): React.J
     }
   };
 
+  //Function to stop recording
   const stopRecording = async () => {
     try {
       const result = await audioRecorderPlayer.stopRecorder();
@@ -137,6 +143,8 @@ const AudioForm = ({ navigation }: { navigation: NavigationProp<any> }): React.J
       console.error('Error stopping recording:', error);
     }
   };
+
+  //Function to play recorded audio
 
   // const onStartPlay = async () => {
   //   try {
@@ -162,6 +170,9 @@ const AudioForm = ({ navigation }: { navigation: NavigationProp<any> }): React.J
   //   }
   // };
 
+
+  //Function to upload recording to server
+  
   const uploadRecording = () => {
     fetch(audioPostUrl, {
       method: 'POST',

@@ -5,11 +5,12 @@ import { View, Platform, Text, TouchableOpacity, StyleSheet } from 'react-native
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 import { Icon } from 'react-native-paper';
 import Video from 'react-native-video';
-import { another, choose, getAVideoHeading, recordBtn, uploadFailureMessage, uploadVideoBtn, videoText } from './constants';
+import { another, choose, getAVideoHeading, recordBtn, selectedVideo, uploadFailureMessage, uploadVideoBtn, videoText } from './constants';
 import { videoPostUrl } from './Urls';
 import { CustomModal } from './SuccessModal';
 import { showToast } from '../common Functions/ShowErrorToast';
 
+//Function to create form data for post api
 const createFormData = (video, body = {}) => {
   const data = new FormData();
 
@@ -32,6 +33,7 @@ const VideoForm = () => {
 
   const navigation = useNavigation();
 
+  //Function to select video from device
   const handleChooseVideo = () => {
     launchImageLibrary({ noData: true, mediaType:'video' }, (response) => {
       if (response) {
@@ -40,10 +42,12 @@ const VideoForm = () => {
     });
   };
 
+  //Function to launch camera
   const handleCamera = () =>{
     launchCamera({ noData: true, mediaType:'video' }, handleResponse);
   }
 
+  //Function to handle camera response
   const handleResponse = (response) => {
     if (response.didCancel) {
       console.log('User cancelled image picker');
@@ -54,6 +58,7 @@ const VideoForm = () => {
     }
   };
 
+  //Function to upload video to server
   const handleUploadVideo = () => {
     console.log(video)
     fetch(videoPostUrl, {
@@ -93,7 +98,7 @@ const VideoForm = () => {
       color='rgb(120,120,120)'
       />
       </TouchableOpacity>
-      <Text style={styles.title}>{getAVideoHeading}</Text>
+      <Text style={styles.title}>{video? selectedVideo: getAVideoHeading}</Text>
       {video && (
         <>
           <Video

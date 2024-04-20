@@ -23,6 +23,7 @@ function LoginPage(): React.JSX.Element {
   });
   const [rememberMe, setRememberMe] = React.useState(false);
 
+
   const handleEmailChange = (text: string) => {
     setInputFields(prevInputFields => ({
       ...prevInputFields,

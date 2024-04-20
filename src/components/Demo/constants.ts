@@ -16,6 +16,7 @@ export const start = 'Start';
 export const stop = 'Stop';
 
 export const getAnImageHeading = 'Get me an Image!';
+export const selectedImage = 'Selected Image';
 export const uploadImageBtn = 'Upload Image';
 export const clickBtn = 'Click now';
 export const imageText = 'Image';
@@ -34,6 +35,7 @@ export const questionAnswerOption='❓ Question Answers';
 
 
 export const getAVideoHeading = 'Get me a Video!';
+export const selectedVideo = 'Selected Video';
 export const uploadVideoBtn = 'Upload Video';
 export const recordBtn = 'Record now';
 export const videoText = 'Video';

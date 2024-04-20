@@ -34,10 +34,12 @@ function NewLoginPage({ navigation }: { navigation: NavigationProp<any> }): Reac
   const [loading, setLoading]  = React.useState(false);
   const { setIsSignedIn } = useContext(AppContext);
 
+  //Function to toggle show and hide password
   const toggleShowPassword = () => {
     setShowPassword(!showPassword);
   };
 
+  //Handle email input
   const handleEmailChange = (text: string) => {
     setInputFields(prevInputFields => ({
       ...prevInputFields,
@@ -45,6 +47,7 @@ function NewLoginPage({ navigation }: { navigation: NavigationProp<any> }): Reac
     }));
   };
 
+  //Handle password input
   const handlePasswordChange = (text: string) => {
     setInputFields(prevInputFields => ({
       ...prevInputFields,
@@ -52,6 +55,7 @@ function NewLoginPage({ navigation }: { navigation: NavigationProp<any> }): Reac
     }));
   };
 
+  //Function to handle login
   const handleLoginPress = async() => {
     if (inputFields.email.trim() === '' || inputFields.password.trim() === '') {
       showToast(emptyFieldMessage,'warning');
@@ -101,6 +105,7 @@ function NewLoginPage({ navigation }: { navigation: NavigationProp<any> }): Reac
     }
   };
 
+  //Function to handle register
   const handleRgisterPress = ()=>{
     navigation.navigate('Register');
     setInputFields({

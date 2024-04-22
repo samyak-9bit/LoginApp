@@ -26,6 +26,8 @@ import PdfForm from './components/Demo/PdfForm';
 import AudioFromDevice from './components/Demo/AudioFromDevice';
 import SelectionPage from './components/Demo/SelectionPage';
 import QuestionAnswer from './components/Demo/QuestionAnswer';
+import { LogBox } from 'react-native';
+import FirstWebView from './components/webview/FirstWebView';
 
 export type RootStackParamList = {
   Users: undefined;
@@ -47,10 +49,12 @@ export type RootStackParamList = {
   AudioFromDevice:undefined;
   Select:undefined;
   QuestionAnswer:undefined;
+  FirstWebView:undefined;
 };
 
 const RootStack = createNativeStackNavigator<RootStackParamList>();
 
+LogBox.ignoreLogs(['new NativeEventEmitter']);
 
 export const AppContext = React.createContext({
   isSignedIn: false,
@@ -105,13 +109,14 @@ function App(): React.JSX.Element {
           ):(
             <>
           <RootStack.Screen name="Welcome" component={WelcomePage}/>
+          <RootStack.Screen name="FirstWebView" component={FirstWebView}/>
+          <RootStack.Screen name="Login" component={NewLoginPage} />
           <RootStack.Screen name="Select" component={SelectionPage}/>
           <RootStack.Screen name="AudioForm" component={AudioForm}/>
           <RootStack.Screen name="PdfForm" component={PdfForm}/>
           <RootStack.Screen name="VideoForm" component={VideoForm}/>
           <RootStack.Screen name="ImageForm" component= {ImageForm}/>
           <RootStack.Screen name="AudioStream" component={AudioStream}/> 
-          <RootStack.Screen name="Login" component={NewLoginPage} />
           <RootStack.Screen name="Register" component={RegistrationPage} />
           <RootStack.Screen name="AudioFromDevice" component={AudioFromDevice} />
           <RootStack.Screen name="QuestionAnswer" component={QuestionAnswer} />
